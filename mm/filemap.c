@@ -4009,6 +4009,9 @@ ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
 	struct file *file = iocb->ki_filp;
 	loff_t pos = iocb->ki_pos;
 	struct address_space *mapping = file->f_mapping;
+	/**
+	 * a_ops定义见：ext4_da_aops
+	 */
 	const struct address_space_operations *a_ops = mapping->a_ops;
 	size_t chunk = mapping_max_folio_size(mapping);
 	long status = 0;
@@ -4043,21 +4046,33 @@ retry:
 			break;
 		}
 
+		/**
+		 * ext4_da_write_begin:
+		 * 1、获取当前pos所在页folio，即pos >> PAGE_SHIFT
+		 * 2、调用 ext4_map_blocks：查 extent 树，得到物理块号 + unwriten转换？
+		 */
 		status = a_ops->write_begin(file, mapping, pos, bytes,
 						&folio, &fsdata);
 		if (unlikely(status < 0))
 			break;
 
+		// offset是pos转换成在当前页的偏移
 		offset = offset_in_folio(folio, pos);
 		if (bytes > folio_size(folio) - offset)
+			// 如果剩余需要写的bytes超过当前页剩余的空间，则本次拷贝截断到当前页剩余位置
 			bytes = folio_size(folio) - offset;
 
 		if (mapping_writably_mapped(mapping))
 			flush_dcache_folio(folio);
 
+		// 从i->ubuf用户空间拷贝bytes大小到folio所在页以offset起始指向的内存地址
 		copied = copy_folio_from_iter_atomic(folio, offset, bytes, i);
 		flush_dcache_folio(folio);
 
+		/**
+		 * ext4_da_write_end:
+		 * 标记脏页、更新文件大小、解锁、收尾
+		 */
 		status = a_ops->write_end(file, mapping, pos, bytes, copied,
 						folio, fsdata);
 		if (unlikely(status != copied)) {

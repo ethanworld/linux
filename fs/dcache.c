@@ -1732,6 +1732,7 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
 	 * to concurrency here
 	 */
 	dentry->d_parent = dget_dlock(parent);
+	// 将新dentry添加到父dentry的子节点链表中。
 	hlist_add_head(&dentry->d_sib, &parent->d_children);
 	spin_unlock(&parent->d_lock);
 
