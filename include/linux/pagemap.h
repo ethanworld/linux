@@ -1393,7 +1393,16 @@ void page_cache_sync_readahead(struct address_space *mapping,
 		struct file_ra_state *ra, struct file *file, pgoff_t index,
 		unsigned long req_count)
 {
+	/**
+	 * 	struct readahead_control ractl = {
+	 *		.file = file,
+	 *		.mapping = mapping,
+	 *		.ra = ra,
+	 *		._index = index,
+	 *	}
+	 */
 	DEFINE_READAHEAD(ractl, file, ra, mapping, index);
+	// req_count要读的folio个数
 	page_cache_sync_ra(&ractl, req_count);
 }
 

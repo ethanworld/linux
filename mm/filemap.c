@@ -1154,7 +1154,7 @@ static int wake_page_function(wait_queue_entry_t *wait, unsigned mode, int sync,
 	return (flags & WQ_FLAG_EXCLUSIVE) != 0;
 }
 
-static void folio_wake_bit(struct folio *folio, int bit_nr)
+static void __attribute__((__optimize__("O0")))  folio_wake_bit(struct folio *folio, int bit_nr)
 {
 	wait_queue_head_t *q = folio_waitqueue(folio);
 	struct wait_page_key key;
@@ -1217,7 +1217,7 @@ static inline bool folio_trylock_flag(struct folio *folio, int bit_nr,
 /* How many times do we accept lock stealing from under a waiter? */
 int sysctl_page_lock_unfairness = 5;
 
-static inline int folio_wait_bit_common(struct folio *folio, int bit_nr,
+static int  __attribute__((__optimize__("O0")))  folio_wait_bit_common(struct folio *folio, int bit_nr,
 		int state, enum behavior behavior)
 {
 	wait_queue_head_t *q = folio_waitqueue(folio);
@@ -1433,7 +1433,7 @@ void migration_entry_wait_on_locked(swp_entry_t entry, spinlock_t *ptl)
 }
 #endif
 
-void folio_wait_bit(struct folio *folio, int bit_nr)
+void __attribute__((__optimize__("O0"))) folio_wait_bit(struct folio *folio, int bit_nr)
 {
 	folio_wait_bit_common(folio, bit_nr, TASK_UNINTERRUPTIBLE, SHARED);
 }
@@ -1491,7 +1491,7 @@ EXPORT_SYMBOL_GPL(folio_add_wait_queue);
  * Context: May be called from interrupt or process context.  May not be
  * called from NMI context.
  */
-void folio_unlock(struct folio *folio)
+void  __attribute__((__optimize__("O0")))   folio_unlock(struct folio *folio)
 {
 	/* Bit 7 allows x86 to check the byte's sign bit */
 	BUILD_BUG_ON(PG_waiters != 7);
@@ -1516,7 +1516,7 @@ EXPORT_SYMBOL(folio_unlock);
  * Context: May be called from interrupt or process context.  May not be
  * called from NMI context.
  */
-void folio_end_read(struct folio *folio, bool success)
+void  __attribute__((__optimize__("O0"))) folio_end_read(struct folio *folio, bool success)
 {
 	unsigned long mask = 1 << PG_locked;
 
@@ -1524,6 +1524,12 @@ void folio_end_read(struct folio *folio, bool success)
 	BUILD_BUG_ON(PG_uptodate > 7);
 	VM_BUG_ON_FOLIO(!folio_test_locked(folio), folio);
 	VM_BUG_ON_FOLIO(success && folio_test_uptodate(folio), folio);
+
+	// 测试代码
+	int testing = 0;
+	if (testing) {
+		return;
+	}
 
 	if (likely(success))
 		mask |= 1 << PG_uptodate;
@@ -2308,7 +2314,7 @@ static void shrink_readahead_size_eio(struct file_ra_state *ra)
  * folio in the batch may have the readahead flag set or the uptodate flag
  * clear so that the caller can take the appropriate action.
  */
-static void filemap_get_read_batch(struct address_space *mapping,
+static void __attribute__((__optimize__("O0"))) filemap_get_read_batch(struct address_space *mapping,
 		pgoff_t index, pgoff_t max, struct folio_batch *fbatch)
 {
 	XA_STATE(xas, &mapping->i_pages, index);
@@ -2328,6 +2334,7 @@ static void filemap_get_read_batch(struct address_space *mapping,
 		if (unlikely(folio != xas_reload(&xas)))
 			goto put_folio;
 
+		// 将foilo追加到folio_batch->folios数组，folio_batch->nr自加
 		if (!folio_batch_add(fbatch, folio))
 			break;
 		if (!folio_test_uptodate(folio))
@@ -2407,6 +2414,7 @@ static int filemap_update_page(struct kiocb *iocb,
 		filemap_invalidate_lock_shared(mapping);
 	}
 
+	// 尝试获取folio的锁
 	if (!folio_trylock(folio)) {
 		error = -EAGAIN;
 		if (iocb->ki_flags & (IOCB_NOWAIT | IOCB_NOIO))
@@ -2416,6 +2424,8 @@ static int filemap_update_page(struct kiocb *iocb,
 			/*
 			 * This is where we usually end up waiting for a
 			 * previously submitted readahead to finish.
+			 * 如果此时还未执行io回调（folio_end_read），则此时会阻塞在锁上
+			 * 锁唤醒后返回AOP_TRUNCATED_PAGE，配合调用方逻辑，流程会重试
 			 */
 			folio_put_wait_locked(folio, TASK_KILLABLE);
 			return AOP_TRUNCATED_PAGE;
@@ -2510,12 +2520,13 @@ static int filemap_readahead(struct kiocb *iocb, struct file *file,
 	return 0;
 }
 
-static int filemap_get_pages(struct kiocb *iocb, size_t count,
+static int __attribute__((__optimize__("O0"))) filemap_get_pages(struct kiocb *iocb, size_t count,
 		struct folio_batch *fbatch, bool need_uptodate)
 {
 	struct file *filp = iocb->ki_filp;
 	struct address_space *mapping = filp->f_mapping;
 	struct file_ra_state *ra = &filp->f_ra;
+	// 基于文件偏移计算在pagecache中的起始页索引
 	pgoff_t index = iocb->ki_pos >> PAGE_SHIFT;
 	pgoff_t last_index;
 	struct folio *folio;
@@ -2523,26 +2534,35 @@ static int filemap_get_pages(struct kiocb *iocb, size_t count,
 	int err = 0;
 
 	/* "last_index" is the index of the page beyond the end of the read */
+	// 基于文件偏移以及要读的长度计算终止页索引，pagecache中的页是从0开始线性连续的，属于文件独享的
 	last_index = DIV_ROUND_UP(iocb->ki_pos + count, PAGE_SIZE);
 retry:
 	if (fatal_signal_pending(current))
 		return -EINTR;
 
+	// 批量读取pagecache
 	filemap_get_read_batch(mapping, index, last_index - 1, fbatch);
+	// 基于folio_batch->nr判定已读取folio个数
 	if (!folio_batch_count(fbatch)) {
 		if (iocb->ki_flags & IOCB_NOIO)
 			return -EAGAIN;
 		if (iocb->ki_flags & IOCB_NOWAIT)
 			flags = memalloc_noio_save();
+
+		/**
+		 * 一个folio都没在pagecahe命中，触发同步读磁盘，可能会阻塞？
+		 */
 		page_cache_sync_readahead(mapping, ra, filp, index,
 				last_index - index);
 		if (iocb->ki_flags & IOCB_NOWAIT)
 			memalloc_noio_restore(flags);
+		// 刚刚触发了同步读磁盘，所以这里重试下
 		filemap_get_read_batch(mapping, index, last_index - 1, fbatch);
 	}
 	if (!folio_batch_count(fbatch)) {
 		if (iocb->ki_flags & (IOCB_NOWAIT | IOCB_WAITQ))
 			return -EAGAIN;
+		// 还是没有读到为啥要新建一个folio???
 		err = filemap_create_folio(filp, mapping, iocb->ki_pos, fbatch);
 		if (err == AOP_TRUNCATED_PAGE)
 			goto retry;
@@ -2550,15 +2570,25 @@ retry:
 	}
 
 	folio = fbatch->folios[folio_batch_count(fbatch) - 1];
+	// 检查readahead标志
 	if (folio_test_readahead(folio)) {
+		// 触发异步预读
 		err = filemap_readahead(iocb, filp, mapping, folio, last_index);
 		if (err)
 			goto err;
 	}
+	/**
+	 * 检查folio的uptodate标志, bio完成io后在回调函数中将folio的PG_uptodate bit位置1
+	 * 这段逻辑是读请求同步读阻塞的关键环节，由于page_cache_sync_readahead会创建folio且submit bio后就返回了
+	 * 所以从开始同步读到流程走到这里，过程中程序并未阻塞，如果io回调足够快，调试时会感觉这里的folio已经是搞定的数据了
+	 * 实际上，对于io回调从mpage_end_io-->folio_end_read会同时给folio置PG_locked+PG_locked，并通过folio_wake_bit唤醒阻塞在folio上的进程
+	 * 至于，什么时候会有进程阻塞在folio上，具体看filemap_update_page的代码
+	 */
 	if (!folio_test_uptodate(folio)) {
 		if ((iocb->ki_flags & IOCB_WAITQ) &&
 		    folio_batch_count(fbatch) > 1)
 			iocb->ki_flags |= IOCB_NOWAIT;
+		// 走到这里表明folio还未完全从磁盘读完
 		err = filemap_update_page(iocb, mapping, count, folio,
 					  need_uptodate);
 		if (err)
@@ -2597,11 +2627,13 @@ static inline bool pos_same_folio(loff_t pos1, loff_t pos2, struct folio *folio)
  * the caller.  If an error happens before any bytes are copied, returns
  * a negative error number.
  */
-ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
+ssize_t __attribute__((__optimize__("O0"))) filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 		ssize_t already_read)
 {
 	struct file *filp = iocb->ki_filp;
+	// readahead预读状态
 	struct file_ra_state *ra = &filp->f_ra;
+	// inode独享的pagecache空间
 	struct address_space *mapping = filp->f_mapping;
 	struct inode *inode = mapping->host;
 	struct folio_batch fbatch;
@@ -2618,6 +2650,13 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 		return 0;
 
 	iov_iter_truncate(iter, inode->i_sb->s_maxbytes - iocb->ki_pos);
+
+	/**
+	 * struct folio_batch
+	 * nr: 已经从pagecache批量读取到的folio个数，初始为0
+	 * struct folio *folios[PAGEVEC_SIZE]: 已经从pagecache批量读到的folio数组
+	 * i: 初始为0
+	 */
 	folio_batch_init(&fbatch);
 
 	do {
@@ -2634,6 +2673,7 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 		if (unlikely(iocb->ki_pos >= i_size_read(inode)))
 			break;
 
+		// 核心流程，内部包括预读计算以及读磁盘
 		error = filemap_get_pages(iocb, iter->count, &fbatch, false);
 		if (error < 0)
 			break;
@@ -2780,15 +2820,19 @@ EXPORT_SYMBOL_GPL(kiocb_invalidate_pages);
  * * number of bytes copied, even for partial reads
  * * negative error code (or 0 if IOCB_NOIO) if nothing was read
  */
-ssize_t
+ssize_t  __attribute__((__optimize__("O0"))) 
 generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 {
+	// struct iov_iter->count
 	size_t count = iov_iter_count(iter);
 	ssize_t retval = 0;
 
 	if (!count)
 		return 0; /* skip atime */
 
+	/**
+	 * Direct IO
+	 */
 	if (iocb->ki_flags & IOCB_DIRECT) {
 		struct file *file = iocb->ki_filp;
 		struct address_space *mapping = file->f_mapping;
@@ -2822,6 +2866,7 @@ generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 			return retval;
 	}
 
+	// pagecache
 	return filemap_read(iocb, iter, retval);
 }
 EXPORT_SYMBOL(generic_file_read_iter);

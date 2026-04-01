@@ -477,12 +477,25 @@ static ssize_t new_sync_read(struct file *filp, char __user *buf, size_t len, lo
 	struct iov_iter iter;
 	ssize_t ret;
 
+	/**
+	  * kiocb记录输入上下文，即file*、pos起始位置、flags标志
+ 	  * .ki_filp = filp,
+	  * .ki_flags = filp->f_iocb_flags,
+	  * .ki_ioprio = get_current_ioprio(),
+	  * .ki_pos = *ppos
+	 */
 	init_sync_kiocb(&kiocb, filp);
 	kiocb.ki_pos = (ppos ? *ppos : 0);
+
+	/**
+	 * iov_iter记录输出上下文：输出用户空间buf，需要读的长度len
+	 * .ubuf = buf,
+	 * .count = len,
+	 */
 	iov_iter_ubuf(&iter, ITER_DEST, buf, len);
 
 	/**
-	 * ext4_file_read_iter
+	 * ext4_file_operations: ext4_file_read_iter
 	 */
 	ret = filp->f_op->read_iter(&kiocb, &iter);
 	BUG_ON(ret == -EIOCBQUEUED);
@@ -562,9 +575,11 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 	if (count > MAX_RW_COUNT)
 		count =  MAX_RW_COUNT;
 
+	// 两组函数区别在于普通 I/O (单 buffer) 操作与 vectored I/O (多 buffers)
 	if (file->f_op->read)
 		ret = file->f_op->read(file, buf, count, pos);
 	else if (file->f_op->read_iter)
+		// 现在大部分文件系统基本都实现read_iter，例如ext4的ext4_file_operations
 		ret = new_sync_read(file, buf, count, pos);
 	else
 		ret = -EINVAL;
@@ -702,6 +717,11 @@ static inline loff_t *file_ppos(struct file *file)
 
 ssize_t ksys_read(unsigned int fd, char __user *buf, size_t count)
 {
+	/**
+	 * 参考：DEFINE_CLASS(fd_pos, struct fd, fdput_pos(_T), fdget_pos(fd), int fd)
+	 * 实际调用：fdget_pos
+	 * 简化流程：file *f = struct task_struct->files->fdt[fd]
+	 */
 	CLASS(fd_pos, f)(fd);
 	ssize_t ret = -EBADF;
 

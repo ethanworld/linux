@@ -129,11 +129,13 @@ static ssize_t ext4_dax_read_iter(struct kiocb *iocb, struct iov_iter *to)
 
 static ssize_t ext4_file_read_iter(struct kiocb *iocb, struct iov_iter *to)
 {
+	// struct file->f_inode
 	struct inode *inode = file_inode(iocb->ki_filp);
 
 	if (unlikely(ext4_forced_shutdown(inode->i_sb)))
 		return -EIO;
 
+	// struct iov_iter->count
 	if (!iov_iter_count(to))
 		return 0; /* skip atime */
 
@@ -142,8 +144,13 @@ static ssize_t ext4_file_read_iter(struct kiocb *iocb, struct iov_iter *to)
 		return ext4_dax_read_iter(iocb, to);
 #endif
 	if (iocb->ki_flags & IOCB_DIRECT)
+		// DIRECT IO模式，不走pagecache
 		return ext4_dio_read_iter(iocb, to);
 
+	/**
+	 * Buffered IO模式，走pagecache
+	 * generic_file_read_iter属于mm/filemap.c模块代码
+	 */
 	return generic_file_read_iter(iocb, to);
 }
 

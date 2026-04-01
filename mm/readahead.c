@@ -157,7 +157,7 @@ static void read_pages(struct readahead_control *rac)
 	blk_start_plug(&plug);
 
 	if (aops->readahead) {
-		aops->readahead(rac);
+		aops->readahead(rac); // ext4_readahead
 		/*
 		 * Clean up the remaining folios.  The sizes in ->ra
 		 * may be used to size the next readahead, so make sure
@@ -180,6 +180,10 @@ static void read_pages(struct readahead_control *rac)
 			aops->read_folio(rac->file, folio);
 	}
 
+	/**
+	 * blk_start_plug = 把 I/O 出口堵住
+	 * blk_finish_plug = 一次性触发io请求发送到磁盘
+	 */
 	blk_finish_plug(&plug);
 	if (unlikely(rac->_workingset))
 		psi_memstall_leave(&rac->_pflags);
@@ -238,6 +242,7 @@ void page_cache_ra_unbounded(struct readahead_control *ractl,
 		ra_folio_index = round_up(readahead_index(ractl) +
 					  nr_to_read - lookahead_size,
 					  min_nrpages);
+		// mark记录第一个异步预读页的位置
 		mark = ra_folio_index - index;
 	}
 	nr_to_read += readahead_index(ractl) - index;
@@ -280,6 +285,7 @@ void page_cache_ra_unbounded(struct readahead_control *ractl,
 			i = ractl->_index + ractl->_nr_pages - index;
 			continue;
 		}
+		// 在第一个异步预读folio上打上预读标记
 		if (i == mark)
 			folio_set_readahead(folio);
 		ractl->_workingset |= folio_test_workingset(folio);
@@ -315,6 +321,7 @@ static void do_page_cache_ra(struct readahead_control *ractl,
 	if (isize == 0)
 		return;
 
+	// 按inode的内容大小计算页边界，避免预读过界
 	end_index = (isize - 1) >> PAGE_SHIFT;
 	if (index > end_index)
 		return;
@@ -368,10 +375,13 @@ static unsigned long get_init_ra_size(unsigned long size, unsigned long max)
 	unsigned long newsize = roundup_pow_of_two(size);
 
 	if (newsize <= max / 32)
+		// 小请求：预读固定为 max_pages / 4
 		newsize = newsize * 4;
 	else if (newsize <= max / 4)
+		// 中等请求: 预读 = 请求大小 × 2
 		newsize = newsize * 2;
 	else
+		// 大请求: 预读 = max_pages（上限）
 		newsize = max;
 
 	return newsize;
@@ -533,6 +543,8 @@ static unsigned long ractl_max_pages(struct readahead_control *ractl,
 	/*
 	 * If the request exceeds the readahead window, allow the read to
 	 * be up to the optimal hardware IO size
+	 * bdi->io_pages = 320
+	 * ra->ra_pages = 32，来自于struct super_block->sbdi->ra_pages？
 	 */
 	if (req_size > max_pages && bdi->io_pages > max_pages)
 		max_pages = min(req_size, bdi->io_pages);
@@ -542,6 +554,7 @@ static unsigned long ractl_max_pages(struct readahead_control *ractl,
 void page_cache_sync_ra(struct readahead_control *ractl,
 		unsigned long req_count)
 {
+	// pagecache首页索引
 	pgoff_t index = readahead_index(ractl);
 	bool do_forced_ra = ractl->file && (ractl->file->f_mode & FMODE_RANDOM);
 	struct file_ra_state *ra = ractl->ra;
@@ -567,6 +580,7 @@ void page_cache_sync_ra(struct readahead_control *ractl,
 		return;
 	}
 
+	// 计算本次预读的页数上限
 	max_pages = ractl_max_pages(ractl, req_count);
 	prev_index = (unsigned long long)ra->prev_pos >> PAGE_SHIFT;
 	/*
@@ -576,7 +590,9 @@ void page_cache_sync_ra(struct readahead_control *ractl,
 	 */
 	if (!index || req_count > max_pages || index - prev_index <= 1UL) {
 		ra->start = index;
+		// 综合请求页个数和最大预读页个数限制，计算本次预读页个数，例如请求1页，加预读一共4页
 		ra->size = get_init_ra_size(req_count, max_pages);
+		// 一共4页中，ra->size - req_count用来做异步预读，例如请求1页同步读，3页异步读
 		ra->async_size = ra->size > req_count ? ra->size - req_count :
 							ra->size >> 1;
 		goto readit;

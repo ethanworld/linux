@@ -3174,6 +3174,9 @@ out:
 	return ret;
 }
 
+/**
+ * 单个folio读取流程
+ */
 static int ext4_read_folio(struct file *file, struct folio *folio)
 {
 	int ret = -EAGAIN;
@@ -3190,6 +3193,9 @@ static int ext4_read_folio(struct file *file, struct folio *folio)
 	return ret;
 }
 
+/**
+ * 批量folio预读流程，rac->ra中size是总批量folio个数，async_size是异步预读folio个数
+ */
 static void ext4_readahead(struct readahead_control *rac)
 {
 	struct inode *inode = rac->mapping->host;

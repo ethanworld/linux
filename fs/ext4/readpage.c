@@ -168,6 +168,10 @@ static void mpage_end_io(struct bio *bio)
 		bio_post_read_processing(ctx);
 		return;
 	}
+	/**
+	 * 当磁盘控制器完成数据读取，并通过 DMA 将数据写入到为 folio 分配的物理内存后，会触发一个硬件中断回调该函数
+	 * 磁盘数据到folio，全程只有DMA在搬运，没有memcpy，没有CPU拷贝
+	 */
 	__read_end_io(bio);
 }
 
@@ -208,6 +212,12 @@ static inline loff_t ext4_readpage_limit(struct inode *inode)
 	return i_size_read(inode);
 }
 
+/**
+ * 单页读：从ext4_read_folio调用进来，rac入参为null, folio为目标pagecache页
+ * 批量读：从ext4_readahead调用进来，rac中迭代批量folio，folio入参为null
+ * 从代码看，流程走到这儿是不区分同步读请求页还是异步读预读页，一视同仁，且submit bio后非阻塞直接返回
+ * 那是在哪儿控制同步请求页阻塞，异步预读页不阻塞的？？？
+ */
 int ext4_mpage_readpages(struct inode *inode,
 		struct readahead_control *rac, struct folio *folio)
 {
@@ -227,6 +237,7 @@ int ext4_mpage_readpages(struct inode *inode,
 	int length;
 	unsigned relative_block = 0;
 	struct ext4_map_blocks map;
+	// 非批预读模式，nr_pages都是1，即单页读
 	unsigned int nr_pages = rac ? readahead_count(rac) : 1;
 
 	map.m_pblk = 0;
@@ -238,8 +249,9 @@ int ext4_mpage_readpages(struct inode *inode,
 		int fully_mapped = 1;
 		unsigned first_hole = blocks_per_page;
 
+		// 预读模式，folio依赖rac迭代器取出
 		if (rac)
-			folio = readahead_folio(rac);
+			folio = readahead_folio(rac); // 按rac中索引依次取出folio
 		prefetchw(&folio->flags);
 
 		if (folio_buffers(folio))
@@ -357,6 +369,7 @@ int ext4_mpage_readpages(struct inode *inode,
 			ext4_set_bio_post_read_ctx(bio, inode, folio->index);
 			bio->bi_iter.bi_sector = first_block << (blkbits - 9);
 			bio->bi_end_io = mpage_end_io;
+			// 预读模式，给bio打上REQ_RAHEAD标记
 			if (rac)
 				bio->bi_opf |= REQ_RAHEAD;
 		}

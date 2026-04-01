@@ -1148,6 +1148,14 @@ bool bio_add_folio(struct bio *bio, struct folio *folio, size_t len,
 {
 	if (len > UINT_MAX || off > UINT_MAX)
 		return false;
+	/**
+	 * 将page加入struct bio->bi_io_vec[]数组
+	 * struct bio_vec {
+	 * 	 struct page	*bv_page;
+	 *	 unsigned int	bv_len;
+	 *	 unsigned int	bv_offset;
+	 * };
+	 */
 	return bio_add_page(bio, &folio->page, len, off) > 0;
 }
 EXPORT_SYMBOL(bio_add_folio);
