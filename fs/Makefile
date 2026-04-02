@@ -11,6 +11,9 @@ CFLAGS_open.o := -O0
 CFLAGS_read_write.o := -O0
 CFLAGS_dcache.o := -O0
 CFLAGS_file.o := -O0
+CFLAGS_file_table.o := -O0
+CFLAGS_inode.o := -O0
+
 obj-y :=	open.o read_write.o file_table.o super.o \
 		char_dev.o stat.o exec.o pipe.o namei.o fcntl.o \
 		ioctl.o readdir.o select.o dcache.o inode.o \

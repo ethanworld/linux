@@ -3565,10 +3565,10 @@ static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 		return ERR_PTR(-ENOENT);
 
 	file->f_mode &= ~FMODE_CREATED;
-	dentry = d_lookup(dir, &nd->last);
+	dentry = d_lookup(dir, &nd->last);  // 在父目录下查目标dentry
 	for (;;) {
 		if (!dentry) {
-			dentry = d_alloc_parallel(dir, &nd->last, &wq);
+			dentry = d_alloc_parallel(dir, &nd->last, &wq);  // 查不到则预分配dentry
 			if (IS_ERR(dentry))
 				return dentry;
 		}
@@ -3970,7 +3970,7 @@ static struct file *path_openat(struct nameidata *nd,
 	struct file *file;
 	int error;
 
-	file = alloc_empty_file(op->open_flag, current_cred());
+	file = alloc_empty_file(op->open_flag, current_cred()); // 从filp_cachep SLUB内存池中分配一个file实例并初始化
 	if (IS_ERR(file))
 		return file;
 
@@ -3979,8 +3979,8 @@ static struct file *path_openat(struct nameidata *nd,
 	} else if (unlikely(file->f_flags & O_PATH)) {
 		error = do_o_path(nd, flags, file);
 	} else {
-		const char *s = path_init(nd, flags);
-		while (!(error = link_path_walk(s, nd)) &&
+		const char *s = path_init(nd, flags); // 初始化路径起点，确定nd的path和inode
+		while (!(error = link_path_walk(s, nd)) && // 输入的路径解析，找到叶子结点的上一层目录
 		       (s = open_last_lookups(nd, file, op)) != NULL)
 			;
 		if (!error)
@@ -4010,7 +4010,7 @@ struct file *do_filp_open(int dfd, struct filename *pathname,
 	int flags = op->lookup_flags;
 	struct file *filp;
 
-	set_nameidata(&nd, dfd, pathname, NULL);
+	set_nameidata(&nd, dfd, pathname, NULL); // 初始化构建nameidata上下文
 	filp = path_openat(&nd, op, flags | LOOKUP_RCU);
 	if (unlikely(filp == ERR_PTR(-ECHILD)))
 		filp = path_openat(&nd, op, flags);

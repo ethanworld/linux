@@ -247,7 +247,7 @@ int ext4_mpage_readpages(struct inode *inode,
 
 	for (; nr_pages; nr_pages--) {
 		int fully_mapped = 1;
-		unsigned first_hole = blocks_per_page;
+		unsigned first_hole = blocks_per_page; // 为1，block和page都是4K
 
 		// 预读模式，folio依赖rac迭代器取出
 		if (rac)
@@ -295,9 +295,19 @@ int ext4_mpage_readpages(struct inode *inode,
 		 */
 		while (page_block < blocks_per_page) {
 			if (block_in_file < last_block) {
-				map.m_lblk = block_in_file;
-				map.m_len = last_block - block_in_file;
+				map.m_lblk = block_in_file; // 计算要读的block逻辑索引
+				map.m_len = last_block - block_in_file; // 计算要读的block个数
 
+				/**
+				 * 根据folio逻辑页索引-->映射逻辑块m_lblk和m_len-->经过ext4_map_blocks查询分配构建-->得到m_pblk物理块以及真实m_len
+				 * 得到的输出作为bio发起io查询的输入
+				 *  struct ext4_map_blocks {
+				 *		ext4_fsblk_t m_pblk;   // 输出：起始物理块号（PBN）
+				 *		ext4_lblk_t  m_lblk;   // 输入：起始逻辑块号（LBN）
+				 *		unsigned int m_len;    // 输入/输出：请求/实际映射的块数
+				 *		unsigned int m_flags;  // 输出：映射状态标志
+				 *	};
+				 */
 				if (ext4_map_blocks(NULL, inode, &map, 0) < 0) {
 				set_error_page:
 					folio_zero_segment(folio, 0,
