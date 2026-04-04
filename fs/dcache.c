@@ -1723,7 +1723,7 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
  */
 struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
 {
-	struct dentry *dentry = __d_alloc(parent->d_sb, name);
+	struct dentry *dentry = __d_alloc(parent->d_sb, name); // 从dentry_cache上分配一段内存
 	if (!dentry)
 		return NULL;
 	spin_lock(&parent->d_lock);
@@ -2304,7 +2304,7 @@ EXPORT_SYMBOL(d_lookup);
 struct dentry *__d_lookup(const struct dentry *parent, const struct qstr *name)
 {
 	unsigned int hash = name->hash;
-	struct hlist_bl_head *b = d_hash(hash);
+	struct hlist_bl_head *b = d_hash(hash); // 从dentry_hashtable表中查询链表头结点
 	struct hlist_bl_node *node;
 	struct dentry *found = NULL;
 	struct dentry *dentry;
@@ -2330,14 +2330,14 @@ struct dentry *__d_lookup(const struct dentry *parent, const struct qstr *name)
 	 * See Documentation/filesystems/path-lookup.txt for more details.
 	 */
 	rcu_read_lock();
-	
+	// 以b作为头结点遍历链表，链表以d_hash指针串联起来，通过d_hash字段container_of反解出dentry地址
 	hlist_bl_for_each_entry_rcu(dentry, node, b, d_hash) {
 
 		if (dentry->d_name.hash != hash)
 			continue;
 
 		spin_lock(&dentry->d_lock);
-		if (dentry->d_parent != parent)
+		if (dentry->d_parent != parent) // 对于name哈希冲突情况，通过比对父dentry，因为文件系统同一目录下不可能出现同名节点
 			goto next;
 		if (d_unhashed(dentry))
 			goto next;

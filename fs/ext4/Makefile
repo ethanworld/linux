@@ -8,6 +8,7 @@ CFLAGS_file.o := -O0
 CFLAGS_readpage.o := -O0
 CFLAGS_inode.o := -O0
 CFLAGS_namei.o := -O0
+# CFLAGS_super.o := -O0
 
 obj-$(CONFIG_EXT4_FS) += ext4.o
 

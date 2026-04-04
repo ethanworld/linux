@@ -1601,7 +1601,7 @@ static struct buffer_head *__ext4_find_entry(struct inode *dir,
 			       "falling back\n"));
 		ret = NULL;
 	}
-	nblocks = dir->i_size >> EXT4_BLOCK_SIZE_BITS(sb);
+	nblocks = dir->i_size >> EXT4_BLOCK_SIZE_BITS(sb); // 计算父inode的block个数
 	if (!nblocks) {
 		ret = NULL;
 		goto cleanup_and_exit;
@@ -1624,7 +1624,7 @@ restart:
 			else
 				ra_max = nblocks - block;
 			ra_max = min(ra_max, ARRAY_SIZE(bh_use));
-			retval = ext4_bread_batch(dir, block, ra_max,
+			retval = ext4_bread_batch(dir, block, ra_max, // 批量读连续多个block，block入参是起始，ra_max是个数，执行完block都会从磁盘映射到内存
 						  false /* wait */, bh_use);
 			if (retval) {
 				ret = ERR_PTR(retval);
@@ -1656,7 +1656,7 @@ restart:
 		}
 		set_buffer_verified(bh);
 		i = search_dirblock(bh, dir, fname,
-			    block << EXT4_BLOCK_SIZE_BITS(sb), res_dir);
+			    block << EXT4_BLOCK_SIZE_BITS(sb), res_dir); // 读取对应block在内存，找到子节点对应的ext4_dir_entry_2，记录在res_dir
 		if (i == 1) {
 			EXT4_I(dir)->i_dir_start_lookup = block;
 			ret = bh;
@@ -1705,7 +1705,7 @@ static struct buffer_head *ext4_find_entry(struct inode *dir,
 		return NULL;
 	if (err)
 		return ERR_PTR(err);
-
+	// 目的是找到dir下是否有名为d_name的子inode，如果找到，inode num记在res_dir中
 	bh = __ext4_find_entry(dir, &fname, res_dir, inlined);
 
 	ext4_fname_free_filename(&fname);
@@ -1785,6 +1785,12 @@ success:
 	return bh;
 }
 
+/**
+ * step1: 遍历dir的extents树，读取叶子节点对应block的内容，实际是多个ext4_dir_entry_2组成
+ * step2: 遍历ext4_dir_entry_2匹配dentry->d_name，找打对应的子节点ino num
+ * step3: 查询ext4文件系统，找到ino对应的磁盘inode元数据，基于此构建内存ext4_inode_info实例和vfs inode
+ * step4: 将dentry和inode关联，即找到了dentry对应的inode，inode即存在于内存也在磁盘上有真实对应的文件实体
+ */
 static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
 {
 	struct inode *inode;
@@ -1793,8 +1799,8 @@ static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, unsi
 
 	if (dentry->d_name.len > EXT4_NAME_LEN)
 		return ERR_PTR(-ENAMETOOLONG);
-
-	bh = ext4_lookup_entry(dir, dentry, &de);
+	// 基于inode查询extents树并查磁盘，会拿到block对应的bh，对于目录场景bh的数据内存指向一组ext4_dir_entry_2
+	bh = ext4_lookup_entry(dir, dentry, &de); // 查询dir对应的bh，遍历bh所有ext4_dir_entry_2，找到跟目标dentry同名的de，拿到de记录的inode num就是子节点
 	if (IS_ERR(bh))
 		return ERR_CAST(bh);
 	inode = NULL;
@@ -1809,8 +1815,8 @@ static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, unsi
 			EXT4_ERROR_INODE(dir, "'%pd' linked to parent dir",
 					 dentry);
 			return ERR_PTR(-EFSCORRUPTED);
-		}
-		inode = ext4_iget(dir->i_sb, ino, EXT4_IGET_NORMAL);
+		}// ext4中如何通过ino num找到对应的inode信息
+		inode = ext4_iget(dir->i_sb, ino, EXT4_IGET_NORMAL); // 输入sb和ino num，从磁盘读取 inode元数据 → 构造内存 struct inode → 加入 inode 哈希表
 		if (inode == ERR_PTR(-ESTALE)) {
 			EXT4_ERROR_INODE(dir,
 					 "deleted inode referenced: %u",
@@ -1837,7 +1843,7 @@ static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, unsi
 		return NULL;
 	}
 
-	return d_splice_alias(inode, dentry);
+	return d_splice_alias(inode, dentry); // 绑定dentry和inode
 }
 
 

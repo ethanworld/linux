@@ -561,14 +561,14 @@ __read_extent_tree_block(const char *function, unsigned int line,
 	if (flags & EXT4_EX_NOFAIL)
 		gfp_flags |= __GFP_NOFAIL;
 
-	pblk = ext4_idx_pblock(idx);
-	bh = sb_getblk_gfp(inode->i_sb, pblk, gfp_flags);
+	pblk = ext4_idx_pblock(idx); // ext4_extent_idx指向的物理block
+	bh = sb_getblk_gfp(inode->i_sb, pblk, gfp_flags); // 输入物理页，只分配/查找 buffer_head，关联到页缓存 (page cache)，不下IO
 	if (unlikely(!bh))
 		return ERR_PTR(-ENOMEM);
 
 	if (!bh_uptodate_or_lock(bh)) {
 		trace_ext4_ext_load_extent(inode, pblk, _RET_IP_);
-		err = ext4_read_bh(bh, 0, NULL, false);
+		err = ext4_read_bh(bh, 0, NULL, false); // 会下IO
 		if (err < 0)
 			goto errout;
 	}
@@ -759,7 +759,7 @@ ext4_ext_binsearch_idx(struct inode *inode,
 
 
 	ext_debug(inode, "binsearch for %u(idx):  ", block);
-
+	// extends每个非叶子节点，由ext4_extent_header+多个连续内存的ext4_extent_idx组成，为啥是连续内存？动态插入时如何调整内存？？？
 	l = EXT_FIRST_INDEX(eh) + 1;
 	r = EXT_LAST_INDEX(eh);
 	while (l <= r) {
@@ -894,7 +894,7 @@ ext4_find_extent(struct inode *inode, ext4_lblk_t block,
 
 	if (flags & EXT4_EX_NOFAIL)
 		gfp_flags |= __GFP_NOFAIL;
-
+	// ext4_inode_info->i_data指向ext4_extent_header，即inode对应的extents树的根结点
 	eh = ext_inode_hdr(inode);
 	depth = ext_depth(inode);
 	if (depth < 0 || depth > EXT4_MAX_EXTENT_DEPTH) {
@@ -929,33 +929,33 @@ ext4_find_extent(struct inode *inode, ext4_lblk_t block,
 	while (i) {
 		ext_debug(inode, "depth %d: num %d, max %d\n",
 			  ppos, le16_to_cpu(eh->eh_entries), le16_to_cpu(eh->eh_max));
-
+		// 对每个非叶子节点二分查找ext4_extent_idx，核心是比较逻辑block和ext4_extent_idx->ei_block
 		ext4_ext_binsearch_idx(inode, path + ppos, block);
-		path[ppos].p_block = ext4_idx_pblock(path[ppos].p_idx);
+		path[ppos].p_block = ext4_idx_pblock(path[ppos].p_idx); // 拼接找到的ext4_extent_idx的物理block地址
 		path[ppos].p_depth = i;
 		path[ppos].p_ext = NULL;
-
-		bh = read_extent_tree_block(inode, path[ppos].p_idx, --i, flags);
+		// inode不重要，重要的是当前层级ext4_extent_idx指向的物理block地址，构建bh下磁盘读取block到内存，然后从内存继续读extents树的下一层级
+		bh = read_extent_tree_block(inode, path[ppos].p_idx, --i, flags); // 内部两个环节：分配或查询bh + 按bh下IO读磁盘指定block
 		if (IS_ERR(bh)) {
 			ret = PTR_ERR(bh);
 			goto err;
 		}
-
-		eh = ext_block_hdr(bh);
+		// Ext4 文件系统在磁盘上存储 Extent 树时，无论是索引节点（Index Node）还是叶子节点（Leaf Node），它们的物理块结构都是统一的：头部 + 数据体。
+		eh = ext_block_hdr(bh); // bh下IO后，bh->d_data指向的就是buffer_head
 		ppos++;
 		path[ppos].p_bh = bh;
 		path[ppos].p_hdr = eh;
 	}
-
+	// 走到这里到了extents树的叶子节点，叶子节点的bh在上面也读进了内存
 	path[ppos].p_depth = i;
 	path[ppos].p_ext = NULL;
 	path[ppos].p_idx = NULL;
 
 	/* find extent */
-	ext4_ext_binsearch(inode, path + ppos, block);
+	ext4_ext_binsearch(inode, path + ppos, block); // 从叶子节点多个ext4_extent中找到目标ext4_extent
 	/* if not an empty leaf */
 	if (path[ppos].p_ext)
-		path[ppos].p_block = ext4_ext_pblock(path[ppos].p_ext);
+		path[ppos].p_block = ext4_ext_pblock(path[ppos].p_ext); // 找到目标ext4_extent后，拼接对应物理block地址
 
 	ext4_ext_show_path(inode, path);
 
@@ -4202,6 +4202,10 @@ int ext4_ext_map_blocks(handle_t *handle, struct inode *inode,
 	trace_ext4_ext_map_blocks_enter(inode, map->m_lblk, map->m_len, flags);
 
 	/* find extent for this block */
+	/**
+	 * 目的是从inode的extents树查指定的逻辑block，整个过程基于bh，如果内存有树节点信息则直接读内存，否则要基于bh将节点信息下IO读磁盘到内存
+	 * 输入是inode（主要是i_sb和i_data两个字段）+ 要获取的逻辑block，输出是对应的逻辑block地址，整个过程在遍历extents树
+	 */
 	path = ext4_find_extent(inode, map->m_lblk, NULL, 0);
 	if (IS_ERR(path)) {
 		err = PTR_ERR(path);
@@ -4224,7 +4228,7 @@ int ext4_ext_map_blocks(handle_t *handle, struct inode *inode,
 		goto out;
 	}
 
-	ex = path[depth].p_ext;
+	ex = path[depth].p_ext; // path记录B+树遍历过程，ex是查询到的叶子节点，可能是最接近目lblk的ext4_extent
 	if (ex) {
 		ext4_lblk_t ee_block = le32_to_cpu(ex->ee_block);
 		ext4_fsblk_t ee_start = ext4_ext_pblock(ex);
@@ -4241,7 +4245,7 @@ int ext4_ext_map_blocks(handle_t *handle, struct inode *inode,
 
 		/* if found extent covers block, simply return it */
 		if (in_range(map->m_lblk, ee_block, ee_len)) {
-			newblock = map->m_lblk - ee_block + ee_start;
+			newblock = map->m_lblk - ee_block + ee_start; // 计算m_lblk对应的物理block地址
 			/* number of remaining blocks in the extent */
 			allocated = ee_len - (map->m_lblk - ee_block);
 			ext_debug(inode, "%u fit into %u:%d -> %llu\n",

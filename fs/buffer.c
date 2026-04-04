@@ -198,21 +198,21 @@ __find_get_block_slow(struct block_device *bdev, sector_t block)
 	struct folio *folio;
 	int all_mapped = 1;
 	static DEFINE_RATELIMIT_STATE(last_warned, HZ, 1);
-
+	// bd_mapping不是文件粒度的，还是文件系统粒度的，此处index也不是文件粒度的逻辑页索引，而是基于物理block计算的
 	index = ((loff_t)block << blkbits) / PAGE_SIZE;
-	folio = __filemap_get_folio(bd_mapping, index, FGP_ACCESSED, 0);
+	folio = __filemap_get_folio(bd_mapping, index, FGP_ACCESSED, 0); // 从文件系统的pagecache中按pblk换算出页索引找到对应的folio
 	if (IS_ERR(folio))
 		goto out;
 
 	spin_lock(&bd_mapping->i_private_lock);
-	head = folio_buffers(folio);
+	head = folio_buffers(folio); // 基于folio->private字段找到对应的bufferhead链表表头
 	if (!head)
 		goto out_unlock;
 	bh = head;
 	do {
 		if (!buffer_mapped(bh))
 			all_mapped = 0;
-		else if (bh->b_blocknr == block) {
+		else if (bh->b_blocknr == block) { // 遍历bh链表，找到b_blocknr与pblk相同的即为目标bh
 			ret = bh;
 			get_bh(bh);
 			goto out_unlock;
@@ -1422,7 +1422,7 @@ EXPORT_SYMBOL(__find_get_block);
 struct buffer_head *bdev_getblk(struct block_device *bdev, sector_t block,
 		unsigned size, gfp_t gfp)
 {
-	struct buffer_head *bh = __find_get_block(bdev, block, size);
+	struct buffer_head *bh = __find_get_block(bdev, block, size); // 直接从folio中bh链表中找到对应的bh
 
 	might_alloc(gfp);
 	if (bh)

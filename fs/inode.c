@@ -1468,11 +1468,11 @@ EXPORT_SYMBOL_GPL(iget5_locked_rcu);
  * before unlocking it via unlock_new_inode().
  */
 struct inode *iget_locked(struct super_block *sb, unsigned long ino)
-{
+{	// 根据ino计算在inode hash表中对应的链表
 	struct hlist_head *head = inode_hashtable + hash(sb, ino);
 	struct inode *inode;
 again:
-	inode = find_inode_fast(sb, head, ino, false);
+	inode = find_inode_fast(sb, head, ino, false); // 遍历链表，比对ino和inode->i_ino
 	if (inode) {
 		if (IS_ERR(inode))
 			return NULL;
@@ -1483,7 +1483,7 @@ again:
 		}
 		return inode;
 	}
-
+	// 申请一个新的inode
 	inode = alloc_inode(sb);
 	if (inode) {
 		struct inode *old;

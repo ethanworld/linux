@@ -843,10 +843,10 @@ struct buffer_head *ext4_getblk(handle_t *handle, struct inode *inode,
 	ASSERT((EXT4_SB(inode->i_sb)->s_mount_state & EXT4_FC_REPLAY)
 		    || handle != NULL || create == 0);
 	ASSERT(create == 0 || !nowait);
-
+	// 构建查询条件，extents树起始逻辑block和block个数
 	map.m_lblk = block;
 	map.m_len = 1;
-	err = ext4_map_blocks(handle, inode, &map, map_flags);
+	err = ext4_map_blocks(handle, inode, &map, map_flags); // 查询extent树，获取block物理索引map.m_pblk，extents树的叶子extent结构已经映射到内存
 
 	if (err == 0)
 		return create ? ERR_PTR(-ENOSPC) : NULL;
@@ -861,7 +861,7 @@ struct buffer_head *ext4_getblk(handle_t *handle, struct inode *inode,
 	 * journal_head etc. Try to avoid using __GFP_MOVABLE here
 	 * as it may fail the migration when journal_head remains.
 	 */
-	bh = getblk_unmovable(inode->i_sb->s_bdev, map.m_pblk,
+	bh = getblk_unmovable(inode->i_sb->s_bdev, map.m_pblk, // 找到m_pblk对应的bh
 				inode->i_sb->s_blocksize);
 
 	if (unlikely(!bh))
@@ -930,7 +930,7 @@ int ext4_bread_batch(struct inode *inode, ext4_lblk_t block, int bh_count,
 	int i, err;
 
 	for (i = 0; i < bh_count; i++) {
-		bhs[i] = ext4_getblk(NULL, inode, block + i, 0 /* map_flags */);
+		bhs[i] = ext4_getblk(NULL, inode, block + i, 0 /* map_flags */); // 读取目标pblk块对应的bh，确保磁盘block已经映射到内存页
 		if (IS_ERR(bhs[i])) {
 			err = PTR_ERR(bhs[i]);
 			bh_count = i;
@@ -941,14 +941,14 @@ int ext4_bread_batch(struct inode *inode, ext4_lblk_t block, int bh_count,
 	for (i = 0; i < bh_count; i++)
 		/* Note that NULL bhs[i] is valid because of holes. */
 		if (bhs[i] && !ext4_buffer_uptodate(bhs[i]))
-			ext4_read_bh_lock(bhs[i], REQ_META | REQ_PRIO, false);
+			ext4_read_bh_lock(bhs[i], REQ_META | REQ_PRIO, false); // 脏页再读下磁盘？
 
 	if (!wait)
 		return 0;
 
 	for (i = 0; i < bh_count; i++)
 		if (bhs[i])
-			wait_on_buffer(bhs[i]);
+			wait_on_buffer(bhs[i]); // 阻塞等待bio完成
 
 	for (i = 0; i < bh_count; i++) {
 		if (bhs[i] && !buffer_uptodate(bhs[i])) {
@@ -4729,7 +4729,7 @@ static const char *check_igot_inode(struct inode *inode, ext4_iget_flags flags)
 	return NULL;
 }
 
-struct inode *__ext4_iget(struct super_block *sb, unsigned long ino,
+struct inode * __ext4_iget(struct super_block *sb, unsigned long ino,
 			  ext4_iget_flags flags, const char *function,
 			  unsigned int line)
 {
@@ -4763,7 +4763,7 @@ struct inode *__ext4_iget(struct super_block *sb, unsigned long ino,
 		return ERR_PTR(-EFSCORRUPTED);
 	}
 
-	inode = iget_locked(sb, ino);
+	inode = iget_locked(sb, ino); // 根据指定ino，查找或者创建一个新的inode实例，仅限内存意义
 	if (!inode)
 		return ERR_PTR(-ENOMEM);
 	if (!(inode->i_state & I_NEW)) {
@@ -4777,11 +4777,11 @@ struct inode *__ext4_iget(struct super_block *sb, unsigned long ino,
 
 	ei = EXT4_I(inode);
 	iloc.bh = NULL;
-
+	// ext4文件系统设计核心：查询ino在ext的磁盘位置信息，例如块组，并且将inode元数据从磁盘读进内存？？？
 	ret = __ext4_get_inode_loc_noinmem(inode, &iloc);
 	if (ret < 0)
 		goto bad_inode;
-	raw_inode = ext4_raw_inode(&iloc);
+	raw_inode = ext4_raw_inode(&iloc); // 基于iloc直接从内存中拿到ext4_inode地址
 
 	if ((flags & EXT4_IGET_HANDLE) &&
 	    (raw_inode->i_links_count == 0) && (raw_inode->i_mode == 0)) {

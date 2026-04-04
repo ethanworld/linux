@@ -160,7 +160,7 @@ MODULE_ALIAS("ext3");
 #define IS_EXT3_SB(sb) ((sb)->s_type == &ext3_fs_type)
 
 
-static inline void __ext4_read_bh(struct buffer_head *bh, blk_opf_t op_flags,
+static inline void __attribute__((__optimize__("O0"))) __ext4_read_bh(struct buffer_head *bh, blk_opf_t op_flags,
 				  bh_end_io_t *end_io, bool simu_fail)
 {
 	if (simu_fail) {
@@ -193,16 +193,16 @@ void ext4_read_bh_nowait(struct buffer_head *bh, blk_opf_t op_flags,
 	__ext4_read_bh(bh, op_flags, end_io, simu_fail);
 }
 
-int ext4_read_bh(struct buffer_head *bh, blk_opf_t op_flags,
+int __attribute__((__optimize__("O0"))) ext4_read_bh(struct buffer_head *bh, blk_opf_t op_flags,
 		 bh_end_io_t *end_io, bool simu_fail)
 {
 	BUG_ON(!buffer_locked(bh));
-
+	// 如果bh已经是uptodate，说明bh->d_data中的内存数据已经有效，无需下io重新读
 	if (ext4_buffer_uptodate(bh)) {
 		unlock_buffer(bh);
 		return 0;
 	}
-
+	// bh—>b_data需要重新下IO读取
 	__ext4_read_bh(bh, op_flags, end_io, simu_fail);
 
 	wait_on_buffer(bh);

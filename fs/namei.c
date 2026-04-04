@@ -1773,7 +1773,7 @@ static struct dentry *__lookup_slow(const struct qstr *name,
 	if (unlikely(IS_DEADDIR(inode)))
 		return ERR_PTR(-ENOENT);
 again:
-	dentry = d_alloc_parallel(dir, name, &wq);
+	dentry = d_alloc_parallel(dir, name, &wq); // 仅仅分配了新dentry内存，暂时加入parent的children，还未查IO还不确定dentry是否真的是parent的子节点,也还未加入dentry_hashtable全局hash表
 	if (IS_ERR(dentry))
 		return dentry;
 	if (unlikely(!d_in_lookup(dentry))) {
@@ -1788,7 +1788,7 @@ again:
 			dentry = ERR_PTR(error);
 		}
 	} else {
-		old = inode->i_op->lookup(inode, dentry, flags);
+		old = inode->i_op->lookup(inode, dentry, flags); // ext4_lookup，输入父dentry的inode和新创建的子dentry
 		d_lookup_done(dentry);
 		if (unlikely(old)) {
 			dput(dentry);
