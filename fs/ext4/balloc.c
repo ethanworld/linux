@@ -270,7 +270,7 @@ struct ext4_group_desc * ext4_get_group_desc(struct super_block *sb,
 	unsigned int offset;
 	ext4_group_t ngroups = ext4_get_groups_count(sb);
 	struct ext4_group_desc *desc;
-	struct ext4_sb_info *sbi = EXT4_SB(sb);
+	struct ext4_sb_info *sbi = EXT4_SB(sb); // (ext4_sb_info *)(sb->s_fs_info)
 	struct buffer_head *bh_p;
 
 	KUNIT_STATIC_STUB_REDIRECT(ext4_get_group_desc,
@@ -282,10 +282,17 @@ struct ext4_group_desc * ext4_get_group_desc(struct super_block *sb,
 
 		return NULL;
 	}
-
-	group_desc = block_group >> EXT4_DESC_PER_BLOCK_BITS(sb);
-	offset = block_group & (EXT4_DESC_PER_BLOCK(sb) - 1);
-	bh_p = sbi_array_rcu_deref(sbi, s_group_desc, group_desc);
+	/**
+	 * GDT是一组连续内存struct ext4_group_desc的结构，每个block能存放EXT4_DESC_PER_BLOCK个desc，所以gdt需要多个block存放
+	 * sbi中并不真实记录GDT各个描述符的内容，sbi->s_group_desc[]只通过一个bh数组记录gdt各个block对应的bh，一个bh对应一个block
+	 * 示例：
+	 * 假设每个block能存放6个struct ext4_group_desc，GDT一共有24个块组，那么sbi->s_group_desc数组大小为24/6=4个bh，即每4个desc落在同一个bh
+	 * 例如第7号块组，group_desc=7/4=1，offset=7&0x3=3，即该块组落在第1个bh指向的内存，偏移为3个struct ext4_group_desc的位置
+	 * 即ext4_group_desc *desc = ((buffer_head *)(sbi->s_group_desc[1]))->b_data + EXT4_DESC_SIZE * 3
+	 */
+	group_desc = block_group >> EXT4_DESC_PER_BLOCK_BITS(sb); // EXT4_SB(s)->s_desc_per_block_bits，大小为6
+	offset = block_group & (EXT4_DESC_PER_BLOCK(sb) - 1); // EXT4_SB(s)->s_desc_per_block，大小是64
+	bh_p = sbi_array_rcu_deref(sbi, s_group_desc, group_desc); // sbi->s_group_desc[group_desc]
 	/*
 	 * sbi_array_rcu_deref returns with rcu unlocked, this is ok since
 	 * the pointer being dereferenced won't be dereferenced again. By
@@ -298,7 +305,7 @@ struct ext4_group_desc * ext4_get_group_desc(struct super_block *sb,
 			   block_group, group_desc, offset);
 		return NULL;
 	}
-
+	// 根据bh->b_data指向内存，找到对应的块组描述符
 	desc = (struct ext4_group_desc *)(
 		(__u8 *)bh_p->b_data +
 		offset * EXT4_DESC_SIZE(sb));

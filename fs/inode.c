@@ -333,7 +333,7 @@ static struct inode *alloc_inode(struct super_block *sb)
 	struct inode *inode;
 
 	if (ops->alloc_inode)
-		inode = ops->alloc_inode(sb);
+		inode = ops->alloc_inode(sb); // ext4_alloc_inode
 	else
 		inode = alloc_inode_sb(sb, inode_cachep, GFP_KERNEL);
 
@@ -1483,7 +1483,7 @@ again:
 		}
 		return inode;
 	}
-	// 申请一个新的inode
+	// inode哈希表中找不到，申请一个新的inode
 	inode = alloc_inode(sb);
 	if (inode) {
 		struct inode *old;

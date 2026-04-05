@@ -4422,28 +4422,28 @@ static int __ext4_get_inode_loc(struct super_block *sb, unsigned long ino,
 		return -EFSCORRUPTED;
 
 	iloc->block_group = (ino - 1) / EXT4_INODES_PER_GROUP(sb);
-	gdp = ext4_get_group_desc(sb, iloc->block_group, NULL);
+	gdp = ext4_get_group_desc(sb, iloc->block_group, NULL); // 根据块组号找到对应的块组描述符
 	if (!gdp)
 		return -EIO;
 
 	/*
 	 * Figure out the offset within the block group inode table
 	 */
-	inodes_per_block = EXT4_SB(sb)->s_inodes_per_block;
+	inodes_per_block = EXT4_SB(sb)->s_inodes_per_block; // 每个block占16个inodes
 	inode_offset = ((ino - 1) %
-			EXT4_INODES_PER_GROUP(sb));
-	iloc->offset = (inode_offset % inodes_per_block) * EXT4_INODE_SIZE(sb);
+			EXT4_INODES_PER_GROUP(sb)); // ino在整个块组中的offset，注意这个offset是相当于这个块组的inodetable部分而言
+	iloc->offset = (inode_offset % inodes_per_block) * EXT4_INODE_SIZE(sb); // ino在对应的block中的位置偏移
 
-	block = ext4_inode_table(sb, gdp);
+	block = ext4_inode_table(sb, gdp); //  根据块描述符拿到inodetable的物理block，gdp->bg_inode_table_hi + gdp->bg_inode_table_lo
 	if ((block <= le32_to_cpu(EXT4_SB(sb)->s_es->s_first_data_block)) ||
 	    (block >= ext4_blocks_count(EXT4_SB(sb)->s_es))) {
 		ext4_error(sb, "Invalid inode table block %llu in "
 			   "block_group %u", block, iloc->block_group);
 		return -EFSCORRUPTED;
 	}
-	block += (inode_offset / inodes_per_block);
+	block += (inode_offset / inodes_per_block); // 计算inode对应的物理block地址
 
-	bh = sb_getblk(sb, block);
+	bh = sb_getblk(sb, block); // 拿到block对应的bh，并将block映射到folio
 	if (unlikely(!bh))
 		return -ENOMEM;
 	if (ext4_buffer_uptodate(bh))
@@ -4763,7 +4763,7 @@ struct inode * __ext4_iget(struct super_block *sb, unsigned long ino,
 		return ERR_PTR(-EFSCORRUPTED);
 	}
 
-	inode = iget_locked(sb, ino); // 根据指定ino，查找或者创建一个新的inode实例，仅限内存意义
+	inode = iget_locked(sb, ino); // 根据指定ino，查找或者创建一个新的inode实例，仅限内存意义，不查磁盘
 	if (!inode)
 		return ERR_PTR(-ENOMEM);
 	if (!(inode->i_state & I_NEW)) {
@@ -4777,10 +4777,20 @@ struct inode * __ext4_iget(struct super_block *sb, unsigned long ino,
 
 	ei = EXT4_I(inode);
 	iloc.bh = NULL;
-	// ext4文件系统设计核心：查询ino在ext的磁盘位置信息，例如块组，并且将inode元数据从磁盘读进内存？？？
+	/**
+	 * ext4文件系统设计核心：查询ino在ext的磁盘位置信息，例如块组，并且将inode元数据从磁盘读进内存？？？
+	 * struct ext4_iloc
+		{
+			struct buffer_head *bh; // 指定ino元数据在磁盘的block对应bh
+			unsigned long offset;   // 指定ino在对应block内的相对偏移，一个block可以放16个ino元数据，这个offset相对位置与bh->d_data指向的内存寻址是一样的
+			ext4_group_t block_group; // 基于ino硬计算的块组号
+		};
+		该函数能基于指定的ino编号算出对应的ino元数据所在block，并继续要该block从磁盘映射到内存，后面从内存读取该ino元数据
+	 */
 	ret = __ext4_get_inode_loc_noinmem(inode, &iloc);
 	if (ret < 0)
 		goto bad_inode;
+	// (struct ext4_inode *) (iloc->bh->b_data + iloc->offset);
 	raw_inode = ext4_raw_inode(&iloc); // 基于iloc直接从内存中拿到ext4_inode地址
 
 	if ((flags & EXT4_IGET_HANDLE) &&
