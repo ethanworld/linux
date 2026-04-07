@@ -3645,8 +3645,8 @@ static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 			error = -EACCES;
 			goto out_dput;
 		}
-
-		error = dir_inode->i_op->create(idmap, dir_inode, dentry,
+		// 从对应块组中的inode bitmap中选择第一个未占用的ino并创建inode实例，关联到dentry
+		error = dir_inode->i_op->create(idmap, dir_inode, dentry,  // ext4_create
 						mode, open_flag & O_EXCL);
 		if (error)
 			goto out_dput;

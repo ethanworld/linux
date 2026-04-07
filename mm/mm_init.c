@@ -2639,7 +2639,7 @@ void __init mm_core_init(void)
 {
 	/* Initializations relying on SMP setup */
 	BUILD_BUG_ON(MAX_ZONELISTS > 2);
-	build_all_zonelists(NULL);
+	build_all_zonelists(NULL); // 建立节点(node)和内存域(zone)的数据结构
 	page_alloc_init_cpuhp();
 	alloc_tag_sec_init();
 	/*
@@ -2652,8 +2652,8 @@ void __init mm_core_init(void)
 	report_meminit();
 	kmsan_init_shadow();
 	stack_depot_early_init();
-	mem_init();
-	kmem_cache_init();
+	mem_init(); // 停用bootmem分配器并迁移到实际的内存管理函数
+	kmem_cache_init(); // 初始化内核内部用于小块内存区的分配器
 	/*
 	 * page_owner must be initialized after buddy is ready, and also after
 	 * slab is ready so that stack_depot_init() works properly

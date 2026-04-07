@@ -5,6 +5,8 @@
 
 CFLAGS_readahead.o := -O0
 CFLAGS_backing-dev.o := -O0
+# CFLAGS_mm_init.o := -O0
+# CFLAGS_page_alloc.o := -O0
 # CFLAGS_filemap.o := -O0
 
 KASAN_SANITIZE_slab_common.o := n

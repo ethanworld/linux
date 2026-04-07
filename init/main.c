@@ -1057,7 +1057,7 @@ void start_kernel(void)
 		initrd_start = 0;
 	}
 #endif
-	setup_per_cpu_pageset();
+	setup_per_cpu_pageset(); // 为各个cpu的zone的pageset数组的第一个数组元素分配内存
 	numa_policy_init();
 	acpi_early_init();
 	if (late_time_init)

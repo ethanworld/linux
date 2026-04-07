@@ -329,7 +329,7 @@ static ext4_fsblk_t ext4_valid_block_bitmap_padding(struct super_block *sb,
 
 	return (next_zero_bit < bitmap_size ? next_zero_bit : 0);
 }
-
+// ext4_group_info是把磁盘的ext4_group_desc加载到内存，加了位图缓存、锁、运行时状态，避免每次操作都读磁盘
 struct ext4_group_info *ext4_get_group_info(struct super_block *sb,
 					    ext4_group_t group)
 {

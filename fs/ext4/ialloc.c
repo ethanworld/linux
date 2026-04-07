@@ -132,7 +132,7 @@ ext4_read_inode_bitmap(struct super_block *sb, ext4_group_t block_group)
 	if (!desc)
 		return ERR_PTR(-EFSCORRUPTED);
 
-	bitmap_blk = ext4_inode_bitmap(sb, desc);
+	bitmap_blk = ext4_inode_bitmap(sb, desc); // 获取对应inodebitmap block的物理位置：bg_inode_bitmap_lo+bg_inode_bitmap_hi
 	if ((bitmap_blk <= le32_to_cpu(sbi->s_es->s_first_data_block)) ||
 	    (bitmap_blk >= ext4_blocks_count(sbi->s_es))) {
 		ext4_error(sb, "Invalid inode bitmap blk %llu in "
@@ -141,7 +141,7 @@ ext4_read_inode_bitmap(struct super_block *sb, ext4_group_t block_group)
 					EXT4_GROUP_INFO_IBITMAP_CORRUPT);
 		return ERR_PTR(-EFSCORRUPTED);
 	}
-	bh = sb_getblk(sb, bitmap_blk);
+	bh = sb_getblk(sb, bitmap_blk); // 将inode bitmap block读到内存拿到bh
 	if (unlikely(!bh)) {
 		ext4_warning(sb, "Cannot read inode bitmap - "
 			     "block_group = %u, inode_bitmap = %llu",
@@ -1031,7 +1031,7 @@ got_group:
 	for (i = 0; i < ngroups; i++, ino = 0) {
 		err = -EIO;
 
-		gdp = ext4_get_group_desc(sb, group, &group_desc_bh);
+		gdp = ext4_get_group_desc(sb, group, &group_desc_bh); // 获取块组对应的ext4_group_desc
 		if (!gdp)
 			goto out;
 
@@ -1042,7 +1042,7 @@ got_group:
 			goto next_group;
 
 		if (!(sbi->s_mount_state & EXT4_FC_REPLAY)) {
-			grp = ext4_get_group_info(sb, group);
+			grp = ext4_get_group_info(sb, group); // 从内存中查询ext4_group_info
 			/*
 			 * Skip groups with already-known suspicious inode
 			 * tables
@@ -1052,7 +1052,7 @@ got_group:
 		}
 
 		brelse(inode_bitmap_bh);
-		inode_bitmap_bh = ext4_read_inode_bitmap(sb, group);
+		inode_bitmap_bh = ext4_read_inode_bitmap(sb, group); // 从磁盘读该块组的inode bitmap，就1个block
 		/* Skip groups with suspicious inode tables */
 		if (IS_ERR(inode_bitmap_bh)) {
 			inode_bitmap_bh = NULL;
@@ -1062,7 +1062,7 @@ got_group:
 		    EXT4_MB_GRP_IBITMAP_CORRUPT(grp))
 			goto next_group;
 
-		ret2 = find_inode_bit(sb, group, inode_bitmap_bh, &ino);
+		ret2 = find_inode_bit(sb, group, inode_bitmap_bh, &ino); // 从inode位图中找到第一个空闲的bit作为ino
 		if (!ret2)
 			goto next_group;
 
@@ -1245,7 +1245,7 @@ got:
 						flex_group)->free_inodes);
 	}
 
-	inode->i_ino = ino + group * EXT4_INODES_PER_GROUP(sb);
+	inode->i_ino = ino + group * EXT4_INODES_PER_GROUP(sb); // 将块组内ino转换成全局ino记入inode实例中
 	/* This is the optimal IO size (for stat), not the fs block size */
 	inode->i_blocks = 0;
 	simple_inode_init_ts(inode);

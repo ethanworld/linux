@@ -3,6 +3,10 @@
 # Makefile for the Linux proc filesystem routines.
 #
 
+CFLAGS_inode.o := -O0
+CFLAGS_base.o := -O0
+CFLAGS_seq_file.o := -O0
+
 obj-y   += proc.o
 
 CFLAGS_task_mmu.o	+= -Wno-override-init

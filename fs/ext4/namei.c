@@ -2844,7 +2844,7 @@ static int ext4_create(struct mnt_idmap *idmap, struct inode *dir,
 	credits = (EXT4_DATA_TRANS_BLOCKS(dir->i_sb) +
 		   EXT4_INDEX_EXTRA_TRANS_BLOCKS + 3);
 retry:
-	inode = ext4_new_inode_start_handle(idmap, dir, mode, &dentry->d_name,
+	inode = ext4_new_inode_start_handle(idmap, dir, mode, &dentry->d_name,  // __ext4_new_inode
 					    0, NULL, EXT4_HT_DIR, credits);
 	handle = ext4_journal_current_handle();
 	err = PTR_ERR(inode);

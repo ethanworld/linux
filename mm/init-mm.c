@@ -46,12 +46,12 @@ struct mm_struct init_mm = {
 	.cpu_bitmap	= CPU_BITS_NONE,
 	INIT_MM_CONTEXT(init_mm)
 };
-
+// 这些地址是虚拟地址，且执行流程在MMU开启之后
 void setup_initial_init_mm(void *start_code, void *end_code,
 			   void *end_data, void *brk)
 {
-	init_mm.start_code = (unsigned long)start_code;
-	init_mm.end_code = (unsigned long)end_code;
-	init_mm.end_data = (unsigned long)end_data;
-	init_mm.brk = (unsigned long)brk;
+	init_mm.start_code = (unsigned long)start_code; // 内核代码段的起始地址
+	init_mm.end_code = (unsigned long)end_code;  // 内核代码段的结束地址
+	init_mm.end_data = (unsigned long)end_data; // 内核数据段的结束地址
+	init_mm.brk = (unsigned long)brk; // 内核堆的结束地址，用于后续的动态内存分配
 }

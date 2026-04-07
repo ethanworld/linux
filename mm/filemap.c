@@ -4049,7 +4049,7 @@ generic_file_direct_write(struct kiocb *iocb, struct iov_iter *from)
 }
 EXPORT_SYMBOL(generic_file_direct_write);
 
-ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
+ssize_t __attribute__((__optimize__("O0")))  generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
 {
 	struct file *file = iocb->ki_filp;
 	loff_t pos = iocb->ki_pos;
