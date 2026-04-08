@@ -1,0 +1,671 @@
+ 0)               |  do_splice_read() {
+ 0)               |    copy_splice_read() {
+ 0)               |      __kmalloc_noprof() {
+ 0) + 45.616 us   |        prefetch_freepointer.isra.0();
+ 0) ! 197.760 us  |      }
+ 0)               |      alloc_pages_bulk_noprof() {
+ 0)   1.120 us    |        _raw_spin_trylock();
+ 0)   1.040 us    |        _raw_spin_unlock();
+ 0) + 12.912 us   |      }
+ 0)               |      proc_reg_read_iter() {
+ 0)               |        seq_read_iter() {
+ 0)   1.168 us    |          mutex_lock();
+ 0)               |          seq_buf_alloc() {
+ 0)               |            __kvmalloc_node_noprof() {
+ 0)               |              __kmalloc_node_noprof() {
+ 0)   0.880 us    |                prefetch_freepointer.isra.0();
+ 0)   6.240 us    |              }
+ 0) + 10.208 us   |            }
+ 0) + 13.968 us   |          }
+ 0)   1.200 us    |          single_start();
+ 0)               |          meminfo_proc_show() {
+ 0)               |            si_meminfo() {
+ 0)               |              nr_blockdev_pages() {
+ 0)   1.200 us    |                _raw_spin_lock();
+ 0)   0.912 us    |                _raw_spin_unlock();
+ 0)   8.080 us    |              }
+ 0) + 12.128 us   |            }
+ 0)               |            si_swapinfo() {
+ 0)   1.008 us    |              _raw_spin_lock();
+ 0)   0.928 us    |              _raw_spin_unlock();
+ 0)   6.160 us    |            }
+ 0)               |            vm_memory_committed() {
+ 0)   1.088 us    |              _raw_spin_lock_irqsave();
+ 0)   1.120 us    |              _raw_spin_unlock_irqrestore();
+ 0)   6.464 us    |            }
+ 0)               |            si_mem_available() {
+ 0)   1.008 us    |              first_online_pgdat();
+ 0)   0.992 us    |              next_zone();
+ 0)   0.832 us    |              next_zone();
+ 0)   0.832 us    |              next_zone();
+ 0)               |              next_zone() {
+ 0)   1.040 us    |                next_online_pgdat();
+ 0)   3.168 us    |              }
+ 0) + 14.992 us   |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   1.504 us    |                  seq_write();
+ 0)   5.456 us    |                }
+ 0) + 11.744 us   |              }
+ 0)   0.992 us    |              seq_write();
+ 0) + 20.080 us   |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.784 us    |                  seq_write();
+ 0)   2.832 us    |                }
+ 0)   5.120 us    |              }
+ 0)   0.880 us    |              seq_write();
+ 0)   9.264 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.784 us    |                  seq_write();
+ 0)   2.848 us    |                }
+ 0)   5.008 us    |              }
+ 0)   0.864 us    |              seq_write();
+ 0)   9.056 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.800 us    |                  seq_write();
+ 0)   2.784 us    |                }
+ 0)   4.912 us    |              }
+ 0)   0.880 us    |              seq_write();
+ 0)   9.008 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.800 us    |                  seq_write();
+ 0)   2.832 us    |                }
+ 0)   4.880 us    |              }
+ 0)   0.880 us    |              seq_write();
+ 0)   8.992 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.784 us    |                }
+ 0)   5.008 us    |              }
+ 0)   0.848 us    |              seq_write();
+ 0)   9.040 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.880 us    |                  seq_write();
+ 0)   3.248 us    |                }
+ 0)   5.712 us    |              }
+ 0)   0.912 us    |              seq_write();
+ 0) ! 153.824 us  |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.832 us    |                }
+ 0)   4.960 us    |              }
+ 0)   0.864 us    |              seq_write();
+ 0)   9.008 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.800 us    |                  seq_write();
+ 0)   2.784 us    |                }
+ 0)   4.864 us    |              }
+ 0)   0.880 us    |              seq_write();
+ 0)   8.912 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.784 us    |                  seq_write();
+ 0)   2.784 us    |                }
+ 0)   4.864 us    |              }
+ 0)   0.880 us    |              seq_write();
+ 0)   8.960 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.784 us    |                  seq_write();
+ 0)   2.832 us    |                }
+ 0)   4.912 us    |              }
+ 0)   0.880 us    |              seq_write();
+ 0)   8.912 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.880 us    |                }
+ 0)   4.960 us    |              }
+ 0)   0.864 us    |              seq_write();
+ 0)   9.072 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.736 us    |                }
+ 0)   4.832 us    |              }
+ 0)   0.880 us    |              seq_write();
+ 0)   8.864 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.800 us    |                  seq_write();
+ 0)   2.752 us    |                }
+ 0)   4.784 us    |              }
+ 0)   0.880 us    |              seq_write();
+ 0)   8.832 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.848 us    |                  seq_write();
+ 0)   2.784 us    |                }
+ 0)   4.800 us    |              }
+ 0)   0.880 us    |              seq_write();
+ 0)   8.832 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.752 us    |                }
+ 0)   4.800 us    |              }
+ 0)   0.832 us    |              seq_write();
+ 0)   8.752 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.752 us    |                  seq_write();
+ 0)   2.752 us    |                }
+ 0)   4.784 us    |              }
+ 0)   0.832 us    |              seq_write();
+ 0)   8.784 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.784 us    |                  seq_write();
+ 0)   2.752 us    |                }
+ 0)   4.800 us    |              }
+ 0)   0.880 us    |              seq_write();
+ 0)   8.752 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   3.040 us    |                }
+ 0)   5.296 us    |              }
+ 0)   0.864 us    |              seq_write();
+ 0) + 14.704 us   |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.800 us    |                  seq_write();
+ 0)   2.832 us    |                }
+ 0)   4.944 us    |              }
+ 0)   0.880 us    |              seq_write();
+ 0)   9.248 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.832 us    |                }
+ 0)   4.912 us    |              }
+ 0)   0.912 us    |              seq_write();
+ 0)   8.992 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.864 us    |                }
+ 0)   4.992 us    |              }
+ 0)   0.928 us    |              seq_write();
+ 0)   9.088 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.784 us    |                  seq_write();
+ 0)   2.832 us    |                }
+ 0)   4.912 us    |              }
+ 0)   0.912 us    |              seq_write();
+ 0)   9.040 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.832 us    |                }
+ 0)   4.960 us    |              }
+ 0)   0.880 us    |              seq_write();
+ 0)   9.040 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.832 us    |                }
+ 0)   5.008 us    |              }
+ 0)   0.912 us    |              seq_write();
+ 0)   9.120 us    |            }
+ 0)               |            seq_printf() {
+ 0)   4.208 us    |              seq_vprintf();
+ 0)   8.528 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.880 us    |                  seq_write();
+ 0)   2.912 us    |                }
+ 0)   5.040 us    |              }
+ 0)   0.880 us    |              seq_write();
+ 0)   9.216 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.832 us    |                }
+ 0)   4.960 us    |              }
+ 0)   0.864 us    |              seq_write();
+ 0)   9.120 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.832 us    |                }
+ 0)   4.880 us    |              }
+ 0)   0.864 us    |              seq_write();
+ 0)   9.072 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.880 us    |                }
+ 0)   4.992 us    |              }
+ 0)   0.960 us    |              seq_write();
+ 0)   9.248 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.912 us    |                }
+ 0)   5.072 us    |              }
+ 0)   0.912 us    |              seq_write();
+ 0) + 10.416 us   |            }
+ 0)               |            vm_commit_limit() {
+ 0)   1.456 us    |              hugetlb_total_pages();
+ 0)   5.536 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.912 us    |                }
+ 0)   5.088 us    |              }
+ 0)   0.912 us    |              seq_write();
+ 0)   9.248 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.864 us    |                }
+ 0)   4.928 us    |              }
+ 0)   0.928 us    |              seq_write();
+ 0)   9.120 us    |            }
+ 0)               |            seq_printf() {
+ 0)   2.176 us    |              seq_vprintf();
+ 0)   4.336 us    |            }
+ 0)   1.136 us    |            vmalloc_nr_pages();
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.880 us    |                }
+ 0)   5.040 us    |              }
+ 0)   0.960 us    |              seq_write();
+ 0)   9.168 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.832 us    |                }
+ 0)   4.880 us    |              }
+ 0)   0.912 us    |              seq_write();
+ 0)   9.008 us    |            }
+ 0)   1.168 us    |            pcpu_nr_pages();
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.864 us    |                }
+ 0)   4.960 us    |              }
+ 0)   0.928 us    |              seq_write();
+ 0)   9.088 us    |            }
+ 0)   1.376 us    |            memtest_report_meminfo();
+ 0)               |            seq_printf() {
+ 0)   1.920 us    |              seq_vprintf();
+ 0)   4.032 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.864 us    |                }
+ 0)   5.136 us    |              }
+ 0)   0.912 us    |              seq_write();
+ 0)   9.296 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.784 us    |                  seq_write();
+ 0)   2.832 us    |                }
+ 0)   4.864 us    |              }
+ 0)   0.928 us    |              seq_write();
+ 0)   8.960 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.880 us    |                }
+ 0)   4.912 us    |              }
+ 0)   0.912 us    |              seq_write();
+ 0)   9.040 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.848 us    |                }
+ 0)   4.912 us    |              }
+ 0)   0.912 us    |              seq_write();
+ 0)   9.040 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.864 us    |                }
+ 0)   4.912 us    |              }
+ 0)   0.864 us    |              seq_write();
+ 0)   9.760 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.832 us    |                }
+ 0)   4.992 us    |              }
+ 0)   0.912 us    |              seq_write();
+ 0)   9.168 us    |            }
+ 0)               |            show_val_kb() {
+ 0)               |              seq_put_decimal_ull_width() {
+ 0)               |                __seq_puts() {
+ 0)   0.832 us    |                  seq_write();
+ 0)   2.832 us    |                }
+ 0)   4.912 us    |              }
+ 0)   0.880 us    |              seq_write();
+ 0)   9.040 us    |            }
+ 0)               |            hugetlb_report_meminfo() {
+ 0)               |              seq_printf() {
+ 0)   2.832 us    |                seq_vprintf();
+ 0)   4.960 us    |              }
+ 0)               |              seq_printf() {
+ 0)   1.248 us    |                seq_vprintf();
+ 0)   3.328 us    |              }
+ 0) + 12.496 us   |            }
+ 0)   1.200 us    |            arch_report_meminfo();
+ 0) ! 723.504 us  |          }
+ 0)   1.248 us    |          single_next();
+ 0)   1.168 us    |          single_stop();
+ 0)   1.152 us    |          mutex_unlock();
+ 0) ! 765.968 us  |        }
+ 0) ! 770.384 us  |      }
+ 0)               |      release_pages() {
+ 0)               |        folios_put_refs() {
+ 0)   0.960 us    |          __page_cache_release();
+ 0)   0.880 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)   0.800 us    |          __page_cache_release();
+ 0)   0.784 us    |          __page_cache_release();
+ 0)   0.784 us    |          __page_cache_release();
+ 0)   0.800 us    |          __page_cache_release();
+ 0)   0.800 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)   0.848 us    |          __page_cache_release();
+ 0)   0.848 us    |          __page_cache_release();
+ 0)   0.848 us    |          __page_cache_release();
+ 0)   0.800 us    |          __page_cache_release();
+ 0)   0.800 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)               |          __mem_cgroup_uncharge_folios() {
+ 0)   0.960 us    |            uncharge_folio();
+ 0)   0.880 us    |            uncharge_folio();
+ 0)   0.784 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0)   0.784 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0)   0.800 us    |            uncharge_folio();
+ 0)   0.784 us    |            uncharge_folio();
+ 0)   0.800 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0)   0.800 us    |            uncharge_folio();
+ 0)   0.784 us    |            uncharge_folio();
+ 0)   0.752 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0) + 30.864 us   |          }
+ 0)               |          free_unref_folios() {
+ 0)   1.408 us    |            get_pfnblock_flags_mask();
+ 0)   1.088 us    |            _raw_spin_trylock();
+ 0)   1.376 us    |            free_unref_page_commit();
+ 0)   0.880 us    |            get_pfnblock_flags_mask();
+ 0)   0.928 us    |            free_unref_page_commit();
+ 0)   0.880 us    |            get_pfnblock_flags_mask();
+ 0)   0.864 us    |            free_unref_page_commit();
+ 0)   0.832 us    |            get_pfnblock_flags_mask();
+ 0)   0.832 us    |            free_unref_page_commit();
+ 0)   0.832 us    |            get_pfnblock_flags_mask();
+ 0)   0.832 us    |            free_unref_page_commit();
+ 0)   0.800 us    |            get_pfnblock_flags_mask();
+ 0)   0.880 us    |            free_unref_page_commit();
+ 0)   0.832 us    |            get_pfnblock_flags_mask();
+ 0)   0.864 us    |            free_unref_page_commit();
+ 0)   0.832 us    |            get_pfnblock_flags_mask();
+ 0)   0.880 us    |            free_unref_page_commit();
+ 0)   0.848 us    |            get_pfnblock_flags_mask();
+ 0)   0.880 us    |            free_unref_page_commit();
+ 0)   0.832 us    |            get_pfnblock_flags_mask();
+ 0)   0.880 us    |            free_unref_page_commit();
+ 0)   0.800 us    |            get_pfnblock_flags_mask();
+ 0)   0.864 us    |            free_unref_page_commit();
+ 0)   0.832 us    |            get_pfnblock_flags_mask();
+ 0)   0.832 us    |            free_unref_page_commit();
+ 0)   0.832 us    |            get_pfnblock_flags_mask();
+ 0)   0.832 us    |            free_unref_page_commit();
+ 0)   0.832 us    |            get_pfnblock_flags_mask();
+ 0)   0.832 us    |            free_unref_page_commit();
+ 0)   0.832 us    |            get_pfnblock_flags_mask();
+ 0)   0.832 us    |            free_unref_page_commit();
+ 0)   0.992 us    |            _raw_spin_unlock();
+ 0) + 70.400 us   |          }
+ 0) ! 136.944 us  |        }
+ 0) ! 140.528 us  |      }
+ 0)   1.632 us    |      kfree();
+ 0) # 1155.344 us |    }
+ 0) # 1532.016 us |  }
+ 0)               |  do_splice_read() {
+ 0)               |    copy_splice_read() {
+ 0)               |      __kmalloc_noprof() {
+ 0)   1.344 us    |        prefetch_freepointer.isra.0();
+ 0)   9.072 us    |      }
+ 0)               |      alloc_pages_bulk_noprof() {
+ 0)   1.040 us    |        _raw_spin_trylock();
+ 0)   1.040 us    |        _raw_spin_unlock();
+ 0) + 12.416 us   |      }
+ 0)               |      proc_reg_read_iter() {
+ 0)               |        seq_read_iter() {
+ 0)   1.056 us    |          mutex_lock();
+ 0)   0.992 us    |          single_start();
+ 0)   1.072 us    |          single_stop();
+ 0)   0.912 us    |          mutex_unlock();
+ 0) + 11.904 us   |        }
+ 0) + 15.328 us   |      }
+ 0)               |      release_pages() {
+ 0)               |        folios_put_refs() {
+ 0)   0.912 us    |          __page_cache_release();
+ 0)   0.960 us    |          __page_cache_release();
+ 0)   0.864 us    |          __page_cache_release();
+ 0)   0.864 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)   0.880 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)   0.864 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)   0.880 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)   1.216 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)               |          __mem_cgroup_uncharge_folios() {
+ 0)   1.088 us    |            uncharge_folio();
+ 0)   0.960 us    |            uncharge_folio();
+ 0)   0.880 us    |            uncharge_folio();
+ 0)   0.864 us    |            uncharge_folio();
+ 0)   0.800 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0)   0.784 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0)   0.800 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0)   0.784 us    |            uncharge_folio();
+ 0) + 37.456 us   |          }
+ 0)               |          free_unref_folios() {
+ 0)   1.008 us    |            get_pfnblock_flags_mask();
+ 0)   0.960 us    |            _raw_spin_trylock();
+ 0)   1.040 us    |            free_unref_page_commit();
+ 0)   0.912 us    |            get_pfnblock_flags_mask();
+ 0)   0.880 us    |            free_unref_page_commit();
+ 0)   0.912 us    |            get_pfnblock_flags_mask();
+ 0)   0.880 us    |            free_unref_page_commit();
+ 0)   0.832 us    |            get_pfnblock_flags_mask();
+ 0)   0.928 us    |            free_unref_page_commit();
+ 0)   0.880 us    |            get_pfnblock_flags_mask();
+ 0)   0.960 us    |            free_unref_page_commit();
+ 0)   0.832 us    |            get_pfnblock_flags_mask();
+ 0)   0.912 us    |            free_unref_page_commit();
+ 0)   0.864 us    |            get_pfnblock_flags_mask();
+ 0)   0.960 us    |            free_unref_page_commit();
+ 0)   0.864 us    |            get_pfnblock_flags_mask();
+ 0)   0.928 us    |            free_unref_page_commit();
+ 0)   0.960 us    |            get_pfnblock_flags_mask();
+ 0)   0.928 us    |            free_unref_page_commit();
+ 0)   0.880 us    |            get_pfnblock_flags_mask();
+ 0)   0.960 us    |            free_unref_page_commit();
+ 0)   0.912 us    |            get_pfnblock_flags_mask();
+ 0)   0.960 us    |            free_unref_page_commit();
+ 0)   0.912 us    |            get_pfnblock_flags_mask();
+ 0)   0.912 us    |            free_unref_page_commit();
+ 0)   0.928 us    |            get_pfnblock_flags_mask();
+ 0)   0.960 us    |            free_unref_page_commit();
+ 0)   0.864 us    |            get_pfnblock_flags_mask();
+ 0)   0.912 us    |            free_unref_page_commit();
+ 0)   0.912 us    |            get_pfnblock_flags_mask();
+ 0)   0.960 us    |            free_unref_page_commit();
+ 0)   0.960 us    |            get_pfnblock_flags_mask();
+ 0)   0.928 us    |            free_unref_page_commit();
+ 0)   0.944 us    |            _raw_spin_unlock();
+ 0) + 78.864 us   |          }
+ 0) ! 166.992 us  |        }
+ 0) ! 169.856 us  |      }
+ 0)   1.584 us    |      kfree();
+ 0) ! 219.056 us  |    }
+ 0) ! 230.064 us  |  }
+ 0)               |  do_splice_read() {
+ 0)               |    copy_splice_read() {
+ 0)               |      __kmalloc_noprof() {
+ 0)   0.960 us    |        prefetch_freepointer.isra.0();
+ 0)   4.464 us    |      }
+ 0)               |      alloc_pages_bulk_noprof() {
+ 0)   1.040 us    |        _raw_spin_trylock();
+ 0)   0.960 us    |        _raw_spin_unlock();
+ 0)   8.672 us    |      }
+ 0)               |      proc_reg_read_iter() {
+ 0)               |        seq_read_iter() {
+ 0)   1.040 us    |          mutex_lock();
+ 0)   0.912 us    |          single_start();
+ 0)   0.864 us    |          single_stop();
+ 0)   0.960 us    |          mutex_unlock();
+ 0) + 10.496 us   |        }
+ 0) + 12.960 us   |      }
+ 0)               |      release_pages() {
+ 0)               |        folios_put_refs() {
+ 0)   0.880 us    |          __page_cache_release();
+ 0)   0.912 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)   0.880 us    |          __page_cache_release();
+ 0)   0.880 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)   0.880 us    |          __page_cache_release();
+ 0)   0.880 us    |          __page_cache_release();
+ 0)   0.880 us    |          __page_cache_release();
+ 0)   0.912 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)   0.832 us    |          __page_cache_release();
+ 0)               |          __mem_cgroup_uncharge_folios() {
+ 0)   0.912 us    |            uncharge_folio();
+ 0)   0.880 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0)   0.880 us    |            uncharge_folio();
+ 0)   0.880 us    |            uncharge_folio();
+ 0)   0.880 us    |            uncharge_folio();
+ 0)   0.880 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0)   0.848 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0)   0.880 us    |            uncharge_folio();
+ 0)   0.880 us    |            uncharge_folio();
+ 0)   0.880 us    |            uncharge_folio();
+ 0)   0.880 us    |            uncharge_folio();
+ 0)   0.880 us    |            uncharge_folio();
+ 0)   0.832 us    |            uncharge_folio();
+ 0) + 34.624 us   |          }
+ 0)               |          free_unref_folios() {
+ 0)   0.928 us    |            get_pfnblock_flags_mask();
+ 0)   0.944 us    |            _raw_spin_trylock();
+ 0)   1.008 us    |            free_unref_page_commit();
+ 0)   0.928 us    |            get_pfnblock_flags_mask();
+ 0)   0.928 us    |            free_unref_page_commit();
+ 0)   0.832 us    |            get_pfnblock_flags_mask();
+ 0)   0.960 us    |            free_unref_page_commit();
+ 0)   0.912 us    |            get_pfnblock_flags_mask();
+ 0)   0.928 us    |            free_unref_page_commit();
+ 0)   0.880 us    |            get_pfnblock_flags_mask();
+ 0)   0.928 us    |            free_unref_page_commit();
+ 0)   0.880 us    |            get_pfnblock_flags_mask();
+ 0)   0.960 us    |            free_unref_page_commit();
+ 0)   0.880 us    |            get_pfnblock_flags_mask();
+ 0)   0.912 us    |            free_unref_page_commit();
+ 0)   0.880 us    |            get_pfnblock_flags_mask();
+ 0)   0.944 us    |            free_unref_page_commit();
+ 0)   0.864 us    |            get_pfnblock_flags_mask();
+ 0)   0.880 us    |            free_unref_page_commit();
+ 0)   1.872 us    |            get_pfnblock_flags_mask();
+ 0)   0.928 us    |            free_unref_page_commit();
+ 0)   0.880 us    |            get_pfnblock_flags_mask();
+ 0)   0.928 us    |            free_unref_page_commit();
+ 0)   0.880 us    |            get_pfnblock_flags_mask();
+ 0)   0.912 us    |            free_unref_page_commit();
+ 0)   0.880 us    |            get_pfnblock_flags_mask();
+ 0)   0.928 us    |            free_unref_page_commit();
+ 0)   0.864 us    |            get_pfnblock_flags_mask();
+ 0)   0.912 us    |            free_unref_page_commit();
+ 0)   0.880 us    |            get_pfnblock_flags_mask();
+ 0)   0.912 us    |            free_unref_page_commit();
+ 0)   0.880 us    |            get_pfnblock_flags_mask();
+ 0)   0.912 us    |            free_unref_page_commit();
+ 0)   0.880 us    |            _raw_spin_unlock();
+ 0) + 78.368 us   |          }
+ 0) ! 151.696 us  |        }
+ 0) ! 154.112 us  |      }
+ 0)   1.248 us    |      kfree();
+ 0) ! 194.688 us  |    }
+ 0) ! 197.728 us  |  }
