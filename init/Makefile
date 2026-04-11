@@ -3,7 +3,10 @@
 # Makefile for the linux kernel.
 #
 
+
 ccflags-y := -fno-function-sections -fno-data-sections
+
+# CFLAGS_main.o := -O0
 
 obj-y                          := main.o version.o mounts.o
 ifneq ($(CONFIG_BLK_DEV_INITRD),y)
