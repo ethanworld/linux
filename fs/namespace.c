@@ -3838,7 +3838,7 @@ int path_mount(const char *dev_name, struct path *path,
 	return do_new_mount(path, type_page, sb_flags, mnt_flags, dev_name,
 			    data_page);
 }
-
+// dev_name=/dev/vdb    dir_name=/mnt/test/dish  type_page=ext4
 long do_mount(const char *dev_name, const char __user *dir_name,
 		const char *type_page, unsigned long flags, void *data_page)
 {

@@ -167,9 +167,8 @@ if __name__ == '__main__':
     """
     ftrace_do_sys_open
     ftrace_do_splice_read
+    cat_proc_cpuinfo
     """
-    for filename in ["ftrace_do_sys_open", "ftrace_do_splice_read"]:
+    for filename in ["cat_proc_pid_stat"]:
         ftrace = FtraceMermaid(filename)
-        ftrace.run()
-        ftrace = FtracePlantUml(filename)
         ftrace.run()

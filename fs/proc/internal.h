@@ -28,7 +28,7 @@ struct mempolicy;
  * parent, but "subdir" is empty for all non-directory entries).
  * subdir_node is used to build the rb tree "subdir" of the parent.
  */
-struct proc_dir_entry {
+struct proc_dir_entry { //proc 虚拟文件系统里一个节点（文件或目录）的核心数据结构
 	/*
 	 * number of callers into module in progress;
 	 * negative -> it's going away RSN

@@ -322,7 +322,7 @@ static int proc_root_getattr(struct mnt_idmap *idmap,
 
 static struct dentry *proc_root_lookup(struct inode * dir, struct dentry * dentry, unsigned int flags)
 {
-	if (!proc_pid_lookup(dentry, flags))
+	if (!proc_pid_lookup(dentry, flags)) // /proc目录下的pid查询
 		return NULL;
 
 	return proc_lookup(dir, dentry, flags);

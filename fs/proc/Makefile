@@ -6,6 +6,9 @@
 CFLAGS_inode.o := -O0
 CFLAGS_base.o := -O0
 CFLAGS_seq_file.o := -O0
+CFLAGS_root.o := -O0
+CFLAGS_self.o := -O0
+CFLAGS_thread_self.o := -O0
 
 obj-y   += proc.o
 

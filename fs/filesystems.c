@@ -45,7 +45,7 @@ void put_filesystem(struct file_system_type *fs)
 {
 	module_put(fs->owner);
 }
-
+// 从file_systems链表查询当前文件系统，或返回尾节点
 static struct file_system_type **find_filesystem(const char *name, unsigned len)
 {
 	struct file_system_type **p;
@@ -86,7 +86,7 @@ int register_filesystem(struct file_system_type * fs)
 	if (*p)
 		res = -EBUSY;
 	else
-		*p = fs;
+		*p = fs; // 该函数只是将fs挂在file_systems链表上
 	write_unlock(&file_systems_lock);
 	return res;
 }
@@ -113,7 +113,7 @@ int unregister_filesystem(struct file_system_type * fs)
 	tmp = &file_systems;
 	while (*tmp) {
 		if (fs == *tmp) {
-			*tmp = fs->next;
+			*tmp = fs->next; // 实现删除节点
 			fs->next = NULL;
 			write_unlock(&file_systems_lock);
 			synchronize_rcu();
