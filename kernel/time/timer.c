@@ -2434,7 +2434,7 @@ static void __run_timer_base(struct timer_base *base)
 
 static void run_timer_base(int index)
 {
-	struct timer_base *base = this_cpu_ptr(&timer_bases[index]);
+	struct timer_base *base = this_cpu_ptr(&timer_bases[index]); // Linux 的定时器是基于每CPU的，获取当前CPU定时器管理结构
 
 	__run_timer_base(base);
 }

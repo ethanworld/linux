@@ -188,7 +188,7 @@ void __sched up(struct semaphore *sem)
 	if (likely(list_empty(&sem->wait_list)))
 		sem->count++;
 	else
-		__up(sem);
+		__up(sem); // 注意这里没有count++，因为认为count被“移交”给了被唤醒的进程，计数本身没有改变
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 }
 EXPORT_SYMBOL(up);
@@ -209,7 +209,7 @@ struct semaphore_waiter {
 static inline int __sched ___down_common(struct semaphore *sem, long state,
 								long timeout)
 {
-	struct semaphore_waiter waiter;
+	struct semaphore_waiter waiter; // 直接使用局部变量，因为阻塞唤醒时，也是在这个函数继续尝试
 
 	list_add_tail(&waiter.list, &sem->wait_list);
 	waiter.task = current;
@@ -220,11 +220,11 @@ static inline int __sched ___down_common(struct semaphore *sem, long state,
 			goto interrupted;
 		if (unlikely(timeout <= 0))
 			goto timed_out;
-		__set_current_state(state);
+		__set_current_state(state); // 设置进程状态
 		raw_spin_unlock_irq(&sem->lock);
-		timeout = schedule_timeout(timeout);
+		timeout = schedule_timeout(timeout); // 触发进程调度，让出当前执行
 		raw_spin_lock_irq(&sem->lock);
-		if (waiter.up)
+		if (waiter.up) // __up流程中，会将wait_list第一个waiter的up标志置true
 			return 0;
 	}
 
@@ -270,7 +270,7 @@ static noinline int __sched __down_timeout(struct semaphore *sem, long timeout)
 }
 
 static noinline void __sched __up(struct semaphore *sem)
-{
+{	// 从队列头部取出一个等待的进程节点（遵循 FIFO 原则）
 	struct semaphore_waiter *waiter = list_first_entry(&sem->wait_list,
 						struct semaphore_waiter, list);
 	list_del(&waiter->list);
