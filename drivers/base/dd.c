@@ -574,9 +574,9 @@ static int call_driver_probe(struct device *dev, const struct device_driver *drv
 	int ret = 0;
 
 	if (dev->bus->probe)
-		ret = dev->bus->probe(dev);
+		ret = dev->bus->probe(dev); // 优先按bus定义的probe，内部最终也有调用驱动的probe
 	else if (drv->probe)
-		ret = drv->probe(dev);
+		ret = drv->probe(dev); // 否则用驱动定义的probe
 
 	switch (ret) {
 	case 0:
@@ -630,7 +630,7 @@ static int really_probe(struct device *dev, const struct device_driver *drv)
 
 re_probe:
 	// FIXME - this cast should not be needed "soon"
-	dev->driver = (struct device_driver *)drv;
+	dev->driver = (struct device_driver *)drv; // 正式绑定
 
 	/* If using pinctrl, bind pins now before probing */
 	ret = pinctrl_bind_pins(dev);
@@ -643,7 +643,7 @@ re_probe:
 			goto pinctrl_bind_failed;
 	}
 
-	ret = driver_sysfs_add(dev);
+	ret = driver_sysfs_add(dev); // 在 sysfs 中创建驱动相关的属性文件
 	if (ret) {
 		dev_err(dev, "%s: driver_sysfs_add failed\n", __func__);
 		goto sysfs_failed;
@@ -655,7 +655,7 @@ re_probe:
 			goto probe_failed;
 	}
 
-	ret = call_driver_probe(dev, drv);
+	ret = call_driver_probe(dev, drv); // 驱动与设备绑定后，按驱动定义的方式执行设备初始化
 	if (ret) {
 		/*
 		 * If fw_devlink_best_effort is active (denoted by -EAGAIN), the
@@ -1169,7 +1169,7 @@ static int __driver_attach(struct device *dev, void *data)
 	 * is an error.
 	 */
 
-	ret = driver_match_device(drv, dev);
+	ret = driver_match_device(drv, dev); // 按优先级规则对driver和device进行匹配
 	if (ret == 0) {
 		/* no match */
 		return 0;
@@ -1213,7 +1213,7 @@ static int __driver_attach(struct device *dev, void *data)
 	}
 
 	__device_driver_lock(dev, dev->parent);
-	driver_probe_device(drv, dev);
+	driver_probe_device(drv, dev); // 匹配成功，则将driver与device进行绑定
 	__device_driver_unlock(dev, dev->parent);
 
 	return 0;

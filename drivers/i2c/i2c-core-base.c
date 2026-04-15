@@ -584,7 +584,7 @@ static int i2c_device_probe(struct device *dev)
 	}
 
 	if (driver->probe)
-		status = driver->probe(client);
+		status = driver->probe(client); // 按驱动实现初始化设备
 	else
 		status = -EINVAL;
 
@@ -2001,7 +2001,7 @@ int i2c_register_driver(struct module *owner, struct i2c_driver *driver)
 
 	/* add the driver to the list of i2c drivers in the driver core */
 	driver->driver.owner = owner;
-	driver->driver.bus = &i2c_bus_type;
+	driver->driver.bus = &i2c_bus_type; // 给driver绑定bus_type
 	INIT_LIST_HEAD(&driver->clients);
 
 	/* When registration returns, the driver core
@@ -2083,7 +2083,7 @@ static int __init i2c_init(void)
 	if (retval >= __i2c_first_dynamic_bus_num)
 		__i2c_first_dynamic_bus_num = retval + 1;
 	up_write(&__i2c_board_lock);
-
+	//  // 将i2c目录挂载/bus下，内容包括: drivers, devices, uevent, drivers_autoprobe, drivers_probe
 	retval = bus_register(&i2c_bus_type);
 	if (retval)
 		return retval;

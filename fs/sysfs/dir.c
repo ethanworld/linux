@@ -49,7 +49,7 @@ int sysfs_create_dir_ns(struct kobject *kobj, const void *ns)
 	if (kobj->parent)
 		parent = kobj->parent->sd;
 	else
-		parent = sysfs_root_kn;
+		parent = sysfs_root_kn; // 如果没有parent，则挂载/sys下
 
 	if (!parent)
 		return -ENOENT;

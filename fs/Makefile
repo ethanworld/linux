@@ -21,6 +21,8 @@ CFLAGS_root.o := -O0
 CFLAGS_filesystems.o := -O0
 CFLAGS_namespace.o := -O0
 CFLAGS_super.o := -O0
+CFLAGS_libfs.o := -O0
+CFLAGS_char_dev.o := -O0
 
 obj-y :=	open.o read_write.o file_table.o super.o \
 		char_dev.o stat.o exec.o pipe.o namei.o fcntl.o \

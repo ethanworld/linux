@@ -1858,7 +1858,7 @@ static int kernfs_fop_readdir(struct file *file, struct dir_context *ctx)
 
 	for (pos = kernfs_dir_pos(ns, parent, ctx->pos, pos);
 	     pos;
-	     pos = kernfs_dir_next_pos(ns, parent, ctx->pos, pos)) {
+	     pos = kernfs_dir_next_pos(ns, parent, ctx->pos, pos)) { // 核心流程
 		const char *name = pos->name;
 		unsigned int type = fs_umode_to_dtype(pos->mode);
 		int len = strlen(name);

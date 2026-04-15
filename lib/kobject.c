@@ -226,7 +226,7 @@ static int kobject_add_internal(struct kobject *kobj)
 
 	/* join kset if set, use it as parent if we do not already have one */
 	if (kobj->kset) {
-		if (!parent)
+		if (!parent) // 当未指定parent时 && 指定了kobj的kset，则将kobj加入kset的kobj下形成层级关系
 			parent = kobject_get(&kobj->kset->kobj);
 		kobj_kset_join(kobj);
 		kobj->parent = parent;

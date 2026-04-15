@@ -236,7 +236,7 @@ int driver_register(struct device_driver *drv)
 		pr_warn("Driver '%s' needs updating - please use "
 			"bus_type methods\n", drv->name);
 
-	other = driver_find(drv->name, drv->bus);
+	other = driver_find(drv->name, drv->bus); // 从对应具体总线的drivers目录下查询是否有同名driver
 	if (other) {
 		pr_err("Error: Driver '%s' is already registered, "
 			"aborting...\n", drv->name);

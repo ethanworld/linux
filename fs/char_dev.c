@@ -130,7 +130,7 @@ __register_chrdev_region(unsigned int major, unsigned int baseminor,
 	}
 
 	ret = -EBUSY;
-	i = major_to_index(major);
+	i = major_to_index(major); // 基于major将char_device_struct插入chrdevs哈希表
 	for (curr = chrdevs[i]; curr; prev = curr, curr = curr->next) {
 		if (curr->major < major)
 			continue;
@@ -204,7 +204,7 @@ int register_chrdev_region(dev_t from, unsigned count, const char *name)
 	dev_t n, next;
 
 	for (n = from; n < to; n = next) {
-		next = MKDEV(MAJOR(n)+1, 0);
+		next = MKDEV(MAJOR(n)+1, 0); // 主设备加1，next为下一段主设备的起始，from-->to=next
 		if (next > to)
 			next = to;
 		cd = __register_chrdev_region(MAJOR(n), MINOR(n),

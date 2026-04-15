@@ -46,7 +46,7 @@ struct i2c_dev {
 	struct cdev cdev;
 };
 
-#define I2C_MINORS	(MINORMASK + 1)
+#define I2C_MINORS	(MINORMASK + 1) // 子设备最大值
 static LIST_HEAD(i2c_dev_list);
 static DEFINE_SPINLOCK(i2c_dev_list_lock);
 
@@ -761,7 +761,7 @@ static int __init i2c_dev_init(void)
 	int res;
 
 	pr_info("i2c /dev entries driver\n");
-
+	// 基于major生成char_device_struct实例并插入chrdevs哈希表
 	res = register_chrdev_region(MKDEV(I2C_MAJOR, 0), I2C_MINORS, "i2c");
 	if (res)
 		goto out;

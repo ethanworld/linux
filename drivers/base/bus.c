@@ -69,7 +69,7 @@ static struct subsys_private *bus_to_subsys(const struct bus_type *bus)
 
 	if (list_empty(&bus_kset->list))
 		goto done;
-
+	// 遍历bus_kset，拿到kobj->kset->subsys_private
 	list_for_each_entry(kobj, &bus_kset->list, entry) {
 		struct kset *kset = container_of(kobj, struct kset, kobj);
 
@@ -662,17 +662,17 @@ int bus_add_driver(struct device_driver *drv)
 		goto out_put_bus;
 	}
 	klist_init(&priv->klist_devices, NULL, NULL);
-	priv->driver = drv;
+	priv->driver = drv; // 将device_driver与driver_private互相关联
 	drv->p = priv;
-	priv->kobj.kset = sp->drivers_kset;
+	priv->kobj.kset = sp->drivers_kset; // 挂载父drivers目录下面
 	error = kobject_init_and_add(&priv->kobj, &driver_ktype, NULL,
 				     "%s", drv->name);
 	if (error)
 		goto out_unregister;
 
-	klist_add_tail(&priv->knode_bus, &sp->klist_drivers);
+	klist_add_tail(&priv->knode_bus, &sp->klist_drivers); // 为什么需要klist_drivers，drivers_kset不够用吗
 	if (sp->drivers_autoprobe) {
-		error = driver_attach(drv);
+		error = driver_attach(drv); // 遍历当前总线下的klist_devices与新增的driver进行match，如何能match，则bind
 		if (error)
 			goto out_del_list;
 	}
@@ -870,25 +870,25 @@ int bus_register(const struct bus_type *bus)
 	if (retval)
 		goto out;
 
-	bus_kobj->kset = bus_kset;
+	bus_kobj->kset = bus_kset; // bus_kobj会挂在bus_kset下，例如/sys/bus/i2c
 	bus_kobj->ktype = &bus_ktype;
 	priv->drivers_autoprobe = 1;
-
+	// /sys/bus的kset下的所有子kobj-->子kset-->子subsys_private
 	retval = kset_register(&priv->subsys);
 	if (retval)
 		goto out;
 
-	retval = bus_create_file(bus, &bus_attr_uevent);
+	retval = bus_create_file(bus, &bus_attr_uevent); // 在/sys/bus/i2c下创建uevent节点
 	if (retval)
 		goto bus_uevent_fail;
 
-	priv->devices_kset = kset_create_and_add("devices", NULL, bus_kobj);
+	priv->devices_kset = kset_create_and_add("devices", NULL, bus_kobj); // sys/bus/i2c/devices
 	if (!priv->devices_kset) {
 		retval = -ENOMEM;
 		goto bus_devices_fail;
 	}
 
-	priv->drivers_kset = kset_create_and_add("drivers", NULL, bus_kobj);
+	priv->drivers_kset = kset_create_and_add("drivers", NULL, bus_kobj); // sys/bus/i2c/drivers
 	if (!priv->drivers_kset) {
 		retval = -ENOMEM;
 		goto bus_drivers_fail;
@@ -901,7 +901,7 @@ int bus_register(const struct bus_type *bus)
 	klist_init(&priv->klist_devices, klist_devices_get, klist_devices_put);
 	klist_init(&priv->klist_drivers, NULL, NULL);
 
-	retval = add_probe_files(bus);
+	retval = add_probe_files(bus); // 在/sys/bus/i2c下创建drivers_probe和drivers_autoprobe两个节点
 	if (retval)
 		goto bus_probe_files_fail;
 
@@ -1327,7 +1327,7 @@ struct device_driver *driver_find(const char *name, const struct bus_type *bus)
 	if (!sp)
 		return NULL;
 
-	k = kset_find_obj(sp->drivers_kset, name);
+	k = kset_find_obj(sp->drivers_kset, name); // 例如从/sys/bus/i2c/drivers目录下查询name
 	subsys_put(sp);
 	if (!k)
 		return NULL;
@@ -1384,11 +1384,11 @@ EXPORT_SYMBOL_GPL(bus_get_dev_root);
 
 int __init buses_init(void)
 {
-	bus_kset = kset_create_and_add("bus", &bus_uevent_ops, NULL);
+	bus_kset = kset_create_and_add("bus", &bus_uevent_ops, NULL); // 挂/sys/bus
 	if (!bus_kset)
 		return -ENOMEM;
 
-	system_kset = kset_create_and_add("system", NULL, &devices_kset->kobj);
+	system_kset = kset_create_and_add("system", NULL, &devices_kset->kobj); // 挂/sys/devices/system
 	if (!system_kset) {
 		/* Do error handling here as devices_init() do */
 		kset_unregister(bus_kset);
