@@ -6,6 +6,10 @@
 # Rewritten to use lists instead of if-statements.
 #
 
+CFLAGS_socket.o := -O0
+# CFLAGS += -Wall -O0
+ccflags-y := -Wall -O0
+
 obj-y				:= devres.o socket.o core/
 
 obj-$(CONFIG_COMPAT)		+= compat.o

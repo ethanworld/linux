@@ -5,6 +5,10 @@ CFLAGS_class.o := -O0
 CFLAGS_bus.o := -O0
 CFLAGS_driver.o := -O0
 CFLAGS_module.o := -O0
+CFLAGS_platform.o := -O0
+
+ccflags-y := -Wall -O0
+
 
 obj-y			:= component.o core.o bus.o dd.o syscore.o \
 			   driver.o class.o platform.o \

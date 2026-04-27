@@ -9,9 +9,12 @@ echo "" > /sys/kernel/debug/tracing/trace
 # 例如：打开函数流跟踪
 echo function_graph > /sys/kernel/debug/tracing/current_tracer
 # 白名单
-echo do_sys_open > /sys/kernel/debug/tracing/set_graph_function
-echo do_splice_read >> /sys/kernel/debug/tracing/set_graph_function
-echo do_mount >> /sys/kernel/debug/tracing/set_graph_function
+echo __sys_socket > /sys/kernel/debug/tracing/set_graph_function
+echo __sys_connect >> /sys/kernel/debug/tracing/set_graph_function
+echo __sys_bind >> /sys/kernel/debug/tracing/set_graph_function
+echo __sys_listen >> /sys/kernel/debug/tracing/set_graph_function
+echo __sys_accept4 >> /sys/kernel/debug/tracing/set_graph_function
+echo input_event >> /sys/kernel/debug/tracing/set_graph_function
 
 # 黑名单
 echo do_interrupt_handler > /sys/kernel/debug/tracing/set_ftrace_notrace

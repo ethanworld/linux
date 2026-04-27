@@ -5,6 +5,9 @@
 
 # Each configuration option enables a list of files.
 
+ccflags-y := -Wall -O0
+CFLAGS_input.o := -O0
+
 obj-$(CONFIG_INPUT)		+= input-core.o
 input-core-y := input.o input-compat.o input-mt.o input-poller.o ff-core.o
 input-core-y += touchscreen.o
