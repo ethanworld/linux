@@ -1,4 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0
+
+# CFLAGS_platform.o := -O0
+ccflags-y := -Wall -O0
+
 obj-$(CONFIG_VIRTIO) += virtio.o virtio_ring.o
 obj-$(CONFIG_VIRTIO_ANCHOR) += virtio_anchor.o
 obj-$(CONFIG_VIRTIO_PCI_LIB) += virtio_pci_modern_dev.o
