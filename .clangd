@@ -1,0 +1,15 @@
+# edit by zengyuan
+# Linux 内核的编译数据库（compile_commands.json）中记录的是 gcc（或交叉编译器如 aarch64-linux-gnu-gcc）的编译参数。而 clangd 底层使用的是 clang 引擎，Linux 内核中包含大量极其偏门的 GCC 专属优化参数（例如 -fconserve-stack、-mno-fp-ret-in-387 等）。当 clangd 读取到这些它根本不认识的参数时，解析器会直接报错“脑死亡”，导致无法建立语法树（AST），进而引发跳转失败和爆红
+# 要彻底解决这个问题，你需要通过配置 .clangd 文件来过滤掉这些不兼容的参数，并正确指定交叉编译目标。
+CompileFlags:
+  # 告诉 Clangd 当前的交叉编译目标架构
+  Add: ["--target=aarch64-linux-gnu", "-Wno-everything"]
+
+  # 过滤掉 clangd 无法识别的 GCC 专属编译标志
+  Remove:
+    - -mno-fp-ret-in-387
+    - -mpreferred-stack-boundary=*
+    - -mabi=lp64
+    - -fconserve-stack
+    - -fno-ipa-sra
+    - -fzero-init-padding-bits=all
